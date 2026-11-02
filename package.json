@@ -1,0 +1,15 @@
+{
+  "name": "autocare-store",
+  "private": true,
+  "description": "AutoCare store: Next.js + Express + MongoDB",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "concurrently -n api,web -c blue,green \"npm start --prefix server\" \"npm start --prefix client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
