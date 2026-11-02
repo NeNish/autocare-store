@@ -132,7 +132,7 @@ The seed creates category 82 only. Add more from **Admin → Categories**, or ad
 The repo deploys as **two Vercel projects** from the same GitHub repo: one for the API (`server/`) and one for the website (`client/`). The database runs on MongoDB Atlas.
 
 1. **MongoDB Atlas:** create a free cluster and a database user, and under *Network Access* allow `0.0.0.0/0` (Vercel servers don't have fixed IPs). Copy the connection string and add the database name, e.g. `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/autocare-store`.
-2. **API project:** in Vercel choose *Add New → Project*, import this repo, and set **Root Directory = `server`**. Framework preset: *Other*. Add environment variables:
+2. **API project:** in Vercel choose *Add New → Project*, import this repo, and set **Root Directory = `server`**. Framework preset: **Express** (Vercel usually detects it automatically). Add environment variables:
    - `MONGODB_URI`: the Atlas connection string
    - `JWT_SECRET`: a long random string
    - `NODE_ENV`: `production`
@@ -143,7 +143,7 @@ The repo deploys as **two Vercel projects** from the same GitHub repo: one for t
 4. Put the website URL into the API project's `CLIENT_URL` and redeploy the API.
 5. **Seed the live database once** from your computer: set `MONGODB_URI`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`, then run `npm run seed`.
 
-How it runs on Vercel: `server/api/index.js` wraps the Express app as a serverless function, and `server/vercel.json` routes every path to it. The MongoDB connection is cached between requests on a warm instance.
+How it runs on Vercel: Vercel's zero-config Express support uses `server/src/app.js`, which exports the app. The app connects to MongoDB on the first request and reuses the connection while the instance stays warm. If `MONGODB_URI` or `JWT_SECRET` is missing, every `/api` call returns a JSON error naming the missing variable instead of crashing.
 
 ## Production notes
 
