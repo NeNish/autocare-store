@@ -127,6 +127,24 @@ All responses are JSON. Errors look like `{ "success": false, "message": "...", 
 
 The seed creates category 82 only. Add more from **Admin → Categories**, or add entries to `categories` and `products` in `server/src/seed/seed.js` and run `npm run seed` again. Seeding is an upsert, so existing orders and users are kept. Use `npm run seed -- --fresh` (inside `server/`) to wipe categories and products first.
 
+## Deploying to Vercel
+
+The repo deploys as **two Vercel projects** from the same GitHub repo: one for the API (`server/`) and one for the website (`client/`). The database runs on MongoDB Atlas.
+
+1. **MongoDB Atlas:** create a free cluster and a database user, and under *Network Access* allow `0.0.0.0/0` (Vercel servers don't have fixed IPs). Copy the connection string and add the database name, e.g. `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/autocare-store`.
+2. **API project:** in Vercel choose *Add New → Project*, import this repo, and set **Root Directory = `server`**. Framework preset: *Other*. Add environment variables:
+   - `MONGODB_URI`: the Atlas connection string
+   - `JWT_SECRET`: a long random string
+   - `NODE_ENV`: `production`
+   - `CLIENT_URL`: the website URL from step 3 (fill in afterwards)
+
+   Deploy, then check `https://<api-project>.vercel.app/api/health`.
+3. **Website project:** import the same repo again, set **Root Directory = `client`** (framework: Next.js), and add `API_URL` = the API URL from step 2, with no trailing slash. Deploy.
+4. Put the website URL into the API project's `CLIENT_URL` and redeploy the API.
+5. **Seed the live database once** from your computer: set `MONGODB_URI`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`, then run `npm run seed`.
+
+How it runs on Vercel: `server/api/index.js` wraps the Express app as a serverless function, and `server/vercel.json` routes every path to it. The MongoDB connection is cached between requests on a warm instance.
+
 ## Production notes
 
 - Set `NODE_ENV=production` on the API so cookies are `secure` (HTTPS only) and 500 errors don't leak details.
