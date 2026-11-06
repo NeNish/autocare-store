@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-const types = ['Wiper Blades', 'Washer Fluid', 'Rain Repellent', 'Microfiber Towel'];
+const types = ['Wiper Blades', 'Rain Repellent', 'Washer Fluid', 'Microfiber Towel'];
 
 export default function ProductFilters({ categories }) {
   const router = useRouter();
@@ -17,90 +17,87 @@ export default function ProductFilters({ categories }) {
       else next.delete(k);
     }
     next.delete('page');
-    router.push(`/products?${next.toString()}`);
+    const qs = next.toString();
+    router.push(qs ? `/products?${qs}` : '/products', { scroll: false });
   }
 
+  const activeType = types.includes(params.get('q')) ? params.get('q') : '';
+  const chip = (active) =>
+    `h-10 rounded-full border px-5 text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 ${
+      active ? 'border-gold bg-gold/15 text-gold-light' : 'border-line text-mute hover:border-line-strong hover:text-ivory'
+    }`;
+
   return (
-    <aside className="space-y-5">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          update({ q: q.trim() });
-        }}
-      >
-        <label htmlFor="search" className="label">Search</label>
-        <div className="flex gap-2">
-          <input id="search" className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. 22 inch, tablets" />
-          <button className="btn-primary px-3" type="submit">Go</button>
-        </div>
-      </form>
-
-      <div>
-        <p className="label">Category</p>
-        <div className="flex flex-col gap-1">
-          <FilterButton active={!params.get('category')} onClick={() => update({ category: '' })}>All categories</FilterButton>
-          {categories.map((c) => (
-            <FilterButton key={c._id} active={params.get('category') === c.slug} onClick={() => update({ category: c.slug })}>
-              {c.number ? `${c.number}. ` : ''}{c.name}
-            </FilterButton>
-          ))}
-        </div>
+    <div className="glass flex flex-col gap-5 rounded-[22px] p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+      <div role="group" aria-label="Product type" className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          aria-pressed={!activeType && !params.get('q')}
+          onClick={() => {
+            setQ('');
+            update({ q: '' });
+          }}
+          className={chip(!activeType && !params.get('q'))}
+        >
+          All
+        </button>
+        {types.map((t) => (
+          <button
+            key={t}
+            type="button"
+            aria-pressed={activeType === t}
+            onClick={() => {
+              const v = activeType === t ? '' : t;
+              setQ(v);
+              update({ q: v });
+            }}
+            className={chip(activeType === t)}
+          >
+            {t}
+          </button>
+        ))}
       </div>
 
-      <div>
-        <p className="label">Product type</p>
-        <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-1">
-          {types.map((t) => {
-            const active = params.get('q') === t;
-            return (
-              <FilterButton
-                key={t}
-                active={active}
-                onClick={() => {
-                  setQ(active ? '' : t);
-                  update({ q: active ? '' : t });
-                }}
-              >
-                {t}
-              </FilterButton>
-            );
-          })}
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="sort" className="label">Sort by</label>
-        <select id="sort" className="input" value={params.get('sort') || 'newest'} onChange={(e) => update({ sort: e.target.value })}>
-          <option value="newest">Newest</option>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            update({ q: q.trim() });
+          }}
+          className="relative"
+        >
+          <label htmlFor="search" className="sr-only">Search the collection</label>
+          <input
+            id="search"
+            className="input h-10 rounded-full py-0 pr-12 sm:w-64"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search — e.g. 22 inch"
+          />
+          <button type="submit" aria-label="Search" className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-full text-gold hover:bg-gold/10">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+          </button>
+        </form>
+        {categories.length > 1 && (
+          <>
+            <label htmlFor="category" className="sr-only">Category</label>
+            <select id="category" className="input h-10 rounded-full py-0 sm:w-56" value={params.get('category') || ''} onChange={(e) => update({ category: e.target.value })}>
+              <option value="">All categories</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c.slug}>{c.number ? `${c.number}. ` : ''}{c.name}</option>
+              ))}
+            </select>
+          </>
+        )}
+        <label htmlFor="sort" className="sr-only">Sort by</label>
+        <select id="sort" className="input h-10 rounded-full py-0 sm:w-52" value={params.get('sort') || 'newest'} onChange={(e) => update({ sort: e.target.value })}>
+          <option value="newest">Newest first</option>
           <option value="price_asc">Price: low to high</option>
           <option value="price_desc">Price: high to low</option>
           <option value="name">Name</option>
         </select>
       </div>
-
-      {[...params.keys()].length > 0 && (
-        <button
-          className="text-sm font-medium text-brand hover:underline"
-          onClick={() => {
-            setQ('');
-            router.push('/products');
-          }}
-        >
-          Clear all filters
-        </button>
-      )}
-    </aside>
-  );
-}
-
-function FilterButton({ active, onClick, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-left text-sm ${active ? 'bg-brand text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 lg:ring-0'}`}
-    >
-      {children}
-    </button>
+    </div>
   );
 }

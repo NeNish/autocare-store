@@ -14,14 +14,14 @@ function Guard({ children, admin }) {
     if (!loading && !user) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
   }, [loading, user, router, pathname]);
 
-  if (loading || !user) return <p className="py-16 text-center text-slate-500">Loading…</p>;
+  if (loading || !user) return <p className="py-24 text-center text-[11px] uppercase tracking-[0.34em] text-dim">Loading…</p>;
   if (admin && !isAdmin) {
-    return <p className="py-16 text-center text-slate-600">You don&apos;t have access to this page.</p>;
+    return <p className="display py-24 text-center text-4xl text-mute">This room is reserved for the atelier.</p>;
   }
   return children;
 }
 
-const Loading = () => <p className="py-16 text-center text-slate-500">Loading…</p>;
+const Loading = () => <p className="py-24 text-center text-[11px] uppercase tracking-[0.34em] text-dim">Loading…</p>;
 
 export default function RequireAuth({ children, admin = false }) {
   return (

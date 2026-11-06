@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RequireAuth from '@/components/RequireAuth';
+import PageShell from '@/components/lux/PageShell';
 import OrderSummary from '@/components/OrderSummary';
 import { useCart } from '@/context/CartContext';
 import useHydrated from '@/lib/useHydrated';
@@ -38,12 +39,12 @@ function CheckoutForm() {
   const [serverError, setServerError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (!ready || !hydrated) return <p className="py-16 text-center text-slate-500">Loading…</p>;
+  if (!ready || !hydrated) return <p className="py-24 text-center text-[11px] uppercase tracking-[0.34em] text-dim">Loading…</p>;
   if (items.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <p className="text-slate-600">Your cart is empty.</p>
-        <Link href="/products" className="btn-primary mt-4">Browse products</Link>
+      <div className="flex flex-col items-start gap-8 border-t border-line pt-12">
+        <p className="text-[17px] text-mute">Your bag is empty, so there is nothing to check out yet.</p>
+        <Link href="/products" className="btn-primary">Enter the collection</Link>
       </div>
     );
   }
@@ -73,40 +74,59 @@ function CheckoutForm() {
   }
 
   return (
-    <form onSubmit={placeOrder} noValidate className="grid gap-8 lg:grid-cols-[1fr_340px]">
-      <div className="card space-y-4 p-6">
-        <h2 className="text-lg font-semibold">Shipping address</h2>
-        {serverError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{serverError}</p>}
-        <div className="grid gap-4 sm:grid-cols-2">
+    <form onSubmit={placeOrder} noValidate className="grid gap-14 lg:grid-cols-[1fr_400px]">
+      <div>
+        <div className="flex items-baseline gap-5">
+          <span className="display text-3xl italic text-gold">I.</span>
+          <h2 className="display text-4xl text-ivory">Delivery address</h2>
+        </div>
+        <div className="hairline mt-8" />
+        {serverError && (
+          <p role="alert" className="mt-8 rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4 text-sm text-rose-100">{serverError}</p>
+        )}
+        <div className="mt-10 grid gap-x-6 gap-y-7 sm:grid-cols-2">
           {fields.map(([key, label, autoComplete]) => (
             <div key={key} className={key === 'line1' ? 'sm:col-span-2' : ''}>
               <label htmlFor={key} className="label">{label}</label>
               <input
                 id={key}
-                className={`input ${errors[key] ? 'border-red-500' : ''}`}
+                className={`input ${errors[key] ? 'border-rose-300/70' : ''}`}
                 autoComplete={autoComplete}
                 inputMode={key === 'postalCode' || key === 'phone' ? 'numeric' : undefined}
                 value={address[key]}
                 onChange={(e) => setAddress((a) => ({ ...a, [key]: e.target.value }))}
                 aria-invalid={Boolean(errors[key])}
+                aria-describedby={errors[key] ? `${key}-error` : undefined}
               />
-              {errors[key] && <p className="mt-1 text-xs text-red-600">{errors[key]}</p>}
+              {errors[key] && <p id={`${key}-error`} className="mt-2 text-xs text-rose-200">{errors[key]}</p>}
             </div>
           ))}
         </div>
-        <p className="rounded-lg bg-mist p-3 text-sm text-slate-600">Payment: cash on delivery.</p>
+
+        <div className="mt-16 flex items-baseline gap-5">
+          <span className="display text-3xl italic text-gold">II.</span>
+          <h2 className="display text-4xl text-ivory">Payment</h2>
+        </div>
+        <div className="hairline mt-8" />
+        <div className="card mt-8 flex items-center gap-5 p-6">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold/60 text-gold">₹</span>
+          <div>
+            <p className="text-[15px] text-ivory">Cash on delivery</p>
+            <p className="mt-1 text-[13px] text-dim">Pay when your order arrives. Online payments are coming soon.</p>
+          </div>
+        </div>
       </div>
 
       <OrderSummary subtotal={subtotal}>
-        <ul className="space-y-1 border-t border-slate-200 pt-3 text-sm text-slate-600">
+        <ul className="space-y-3 border-t border-line pt-5 text-[13px] text-mute">
           {items.map((i) => (
-            <li key={i.productId} className="flex justify-between gap-2">
+            <li key={i.productId} className="flex justify-between gap-4">
               <span className="truncate">{i.quantity} × {i.name}</span>
-              <span>{formatPrice(i.price * i.quantity)}</span>
+              <span className="shrink-0 tabular-nums">{formatPrice(i.price * i.quantity)}</span>
             </li>
           ))}
         </ul>
-        <button type="submit" className="btn-primary w-full" disabled={busy}>
+        <button type="submit" data-magnetic="0.2" className="btn-primary h-14 w-full" disabled={busy}>
           {busy ? 'Placing order…' : 'Place order'}
         </button>
       </OrderSummary>
@@ -116,11 +136,10 @@ function CheckoutForm() {
 
 export default function CheckoutPage() {
   return (
-    <div className="container-page py-8">
-      <h1 className="mb-6 text-3xl font-bold">Checkout</h1>
+    <PageShell eyebrow="Checkout" title="Almost" accent="yours.">
       <RequireAuth>
         <CheckoutForm />
       </RequireAuth>
-    </div>
+    </PageShell>
   );
 }

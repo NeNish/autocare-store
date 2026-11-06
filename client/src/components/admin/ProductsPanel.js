@@ -46,17 +46,17 @@ export default function ProductsPanel({ categories }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">{products ? `${products.length} products` : 'Loading…'}</p>
+        <p className="text-sm text-mute">{products ? `${products.length} products` : 'Loading…'}</p>
         <button className="btn-primary" onClick={() => setEditing('new')} disabled={categories.length === 0}>
           + Add product
         </button>
       </div>
-      {categories.length === 0 && <p className="text-sm text-amber-700">Create a category first.</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {categories.length === 0 && <p className="text-sm text-amber-200">Create a category first.</p>}
+      {error && <p className="text-sm text-rose-200">{error}</p>}
       {products && (
         <div className="card overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="border-b border-line bg-white/[0.03] text-xs uppercase text-dim">
               <tr>
                 <th className="px-4 py-3">Product</th>
                 <th className="px-4 py-3">Type</th>
@@ -66,17 +66,17 @@ export default function ProductsPanel({ categories }) {
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line">
               {products.map((p) => (
                 <tr key={p._id}>
                   <td className="px-4 py-3 font-medium">{p.name}</td>
-                  <td className="px-4 py-3 text-slate-600">{p.type}</td>
+                  <td className="px-4 py-3 text-mute">{p.type}</td>
                   <td className="px-4 py-3 text-right">{formatPrice(p.price)}</td>
-                  <td className={`px-4 py-3 text-right ${p.stock <= 10 ? 'font-semibold text-amber-700' : ''}`}>{p.stock}</td>
-                  <td className="px-4 py-3">{p.isActive ? 'Visible' : <span className="text-slate-400">Hidden</span>}</td>
+                  <td className={`px-4 py-3 text-right ${p.stock <= 10 ? 'font-semibold text-amber-200' : ''}`}>{p.stock}</td>
+                  <td className="px-4 py-3">{p.isActive ? 'Visible' : <span className="text-dim">Hidden</span>}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-right">
-                    <button className="mr-3 text-brand hover:underline" onClick={() => setEditing(p)}>Edit</button>
-                    <button className="text-red-600 hover:underline" onClick={() => remove(p)}>Delete</button>
+                    <button className="mr-3 text-gold hover:underline" onClick={() => setEditing(p)}>Edit</button>
+                    <button className="text-rose-200 hover:underline" onClick={() => remove(p)}>Delete</button>
                   </td>
                 </tr>
               ))}

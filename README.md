@@ -36,6 +36,17 @@ Built on the team's standard stack:
 - Helmet security headers, CORS allow-list, rate limiting on login and sign-up, 100 kb JSON body limit
 - One central error handler that returns consistent `{ success, message, details }` JSON
 
+## Design
+
+The storefront is art-directed as a luxury house: obsidian and midnight grounds, champagne gold and silver accents, Cormorant Garamond display serif over Geist sans.
+
+- **Opening sequence:** a gold ring draws, a wiper light sweeps, then the curtain lifts. It plays once per browser session, can be skipped with a click or Escape, and is pure CSS so it always completes.
+- **Homepage chapters:** a full-screen hero with canvas rain and a 3D glass windshield that tilts with the mouse (the wiper sweeps the drops away), a manifesto that lights up word by word as you scroll, a collection index whose artwork follows the cursor, a pinned four-chapter "Ritual" driven by scroll, the signature piece, and a cinematic footer.
+- **Interaction:** magnetic buttons, a custom champagne cursor (desktop only), 3D tilt on product art, parallax depth, scroll reveals and soft page transitions.
+- **Motion engine:** one small runtime (`client/src/components/lux/MotionRuntime.js`) drives every effect through data attributes (`data-reveal`, `data-magnetic`, `data-tilt`, `data-parallax`, `data-progress`), so pages stay server-rendered. No animation library is used.
+- **Accessibility:** visitors who prefer reduced motion get no opening sequence, cursor, parallax or hidden-until-scrolled content. Focus outlines are visible, decorative layers are hidden from screen readers, and text meets contrast guidelines on the dark grounds.
+- **Product art:** fine-line gold illustrations per product line (`ProductArt.js`). Add an image URL to a product in Admin to show a photograph instead.
+
 ## Project structure
 
 ```

@@ -1,70 +1,111 @@
-// Simple illustrated placeholders per product type, used when a product has no image URL.
-const palettes = {
-  'Wiper Blades': ['#e6eef7', '#0b5cad'],
-  'Washer Fluid': ['#e5f5f3', '#0f8a7d'],
-  'Rain Repellent': ['#eaf0ff', '#3b5bdb'],
-  'Microfiber Towel': ['#fff4e0', '#d98a00'],
+// Fine-line champagne illustrations on a midnight ground, one per product line.
+// Used wherever a product has no photograph (set an image URL in Admin to replace it).
+import { useId } from 'react';
+
+const LABELS = {
+  'Wiper Blades': 'Wiper blades illustration',
+  'Washer Fluid': 'Washer fluid tablets illustration',
+  'Rain Repellent': 'Rain-repellent atomiser illustration',
+  'Microfiber Towel': 'Microfiber drying towel illustration',
 };
 
-function Shape({ type, color }) {
+function Lines({ type, gold }) {
   switch (type) {
     case 'Wiper Blades':
       return (
-        <g stroke={color} strokeLinecap="round" fill="none">
-          <path d="M28 92 Q70 30 140 22" strokeWidth="7" />
-          <path d="M40 104 Q86 48 156 42" strokeWidth="7" opacity=".55" />
-          <circle cx="28" cy="92" r="6" fill={color} />
-          <circle cx="40" cy="104" r="6" fill={color} opacity=".55" />
+        <g fill="none" strokeLinecap="round">
+          <path d="M62 196 Q118 92 236 70" stroke={gold} strokeWidth="2.2" />
+          <path d="M84 214 Q150 118 262 102" stroke={gold} strokeWidth="1.2" opacity="0.55" />
+          <path d="M62 196 L150 196" stroke="#d4b27a" strokeOpacity="0.25" />
+          <circle cx="62" cy="196" r="7" stroke={gold} strokeWidth="1.2" />
+          <circle cx="62" cy="196" r="2" fill="#f1dfb8" />
+          <path d="M40 228 Q150 40 300 50" stroke="#c9cdd4" strokeOpacity="0.12" strokeDasharray="2 6" />
         </g>
       );
     case 'Washer Fluid':
       return (
-        <g fill={color}>
-          <circle cx="62" cy="70" r="22" />
-          <circle cx="104" cy="58" r="22" opacity=".7" />
-          <circle cx="98" cy="98" r="18" opacity=".45" />
-          <path d="M140 30 q8 12 0 18 q-8 -6 0 -18z" opacity=".6" />
+        <g fill="none">
+          <ellipse cx="138" cy="170" rx="46" ry="14" stroke={gold} strokeWidth="1.4" />
+          <path d="M92 170 v-14 a46 14 0 0 1 92 0 v14" stroke={gold} strokeWidth="1.4" />
+          <ellipse cx="138" cy="156" rx="46" ry="14" stroke="#f1dfb8" strokeOpacity="0.35" />
+          <ellipse cx="206" cy="134" rx="34" ry="10" stroke={gold} strokeWidth="1.1" opacity="0.7" />
+          <path d="M172 134 v-10 a34 10 0 0 1 68 0 v10" stroke={gold} strokeWidth="1.1" opacity="0.7" />
+          {[[150, 120, 4], [168, 98, 3], [190, 84, 5], [214, 64, 3], [232, 92, 2.5], [128, 104, 2.5], [250, 54, 4]].map(([x, y, r]) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r={r} stroke="#f1dfb8" strokeOpacity="0.7" />
+          ))}
         </g>
       );
     case 'Rain Repellent':
       return (
-        <g fill={color}>
-          <rect x="62" y="40" width="40" height="76" rx="8" />
-          <rect x="72" y="26" width="20" height="16" rx="3" opacity=".7" />
-          {[[124, 38], [138, 62], [120, 84], [142, 100]].map(([x, y]) => (
-            <path key={`${x}-${y}`} d={`M${x} ${y} q6 9 0 13 q-6 -4 0 -13z`} opacity=".55" />
+        <g fill="none">
+          <rect x="122" y="96" width="56" height="128" rx="14" stroke={gold} strokeWidth="1.4" />
+          <rect x="138" y="70" width="24" height="26" rx="4" stroke={gold} strokeWidth="1.2" />
+          <path d="M162 80 h20" stroke={gold} strokeWidth="1.2" />
+          <path d="M134 126 v70" stroke="#f1dfb8" strokeOpacity="0.4" />
+          {[[204, 70], [220, 84], [214, 102], [236, 66], [244, 94], [230, 116], [256, 80]].map(([x, y], i) => (
+            <path key={i} d={`M${x} ${y} q4 6 0 9 q-4 -3 0 -9z`} fill="#f1dfb8" fillOpacity={0.35 + (i % 3) * 0.15} />
           ))}
         </g>
       );
     case 'Microfiber Towel':
       return (
-        <g>
-          <rect x="44" y="30" width="96" height="80" rx="6" fill={color} opacity=".85" />
-          <g stroke="#fff" strokeOpacity=".55" strokeWidth="2">
-            {[46, 62, 78, 94].map((y) => (
-              <line key={y} x1="48" x2="136" y1={y} y2={y} />
+        <g fill="none">
+          <path d="M84 92 L236 80 L250 206 L96 220 Z" stroke={gold} strokeWidth="1.4" />
+          <path d="M96 220 Q104 236 124 234 L250 206" stroke={gold} strokeWidth="1" opacity="0.6" />
+          <g stroke="#f1dfb8" strokeOpacity="0.28">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <path key={`h${i}`} d={`M${86 + i * 2} ${110 + i * 18} L${238 + i * 2} ${98 + i * 18}`} />
             ))}
-            {[64, 84, 104, 124].map((x) => (
-              <line key={x} y1="34" y2="106" x1={x} x2={x} />
+            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+              <path key={`v${i}`} d={`M${106 + i * 20} ${90 - i * 1.6} L${118 + i * 20} ${216 - i * 1.6}`} />
             ))}
           </g>
         </g>
       );
     default:
-      return <circle cx="92" cy="70" r="30" fill={color} />;
+      return <circle cx="160" cy="140" r="50" stroke={gold} fill="none" />;
   }
 }
 
 export default function ProductArt({ product, className = '' }) {
+  // Unique gradient ids per instance: shared ids break when the first copy is hidden
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const ids = { bg: `pa-bg-${uid}`, gold: `pa-gold-${uid}`, glow: `pa-glow-${uid}` };
   if (product.image) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={product.image} alt={product.name} className={`h-full w-full object-cover ${className}`} />;
   }
-  const [bg, fg] = palettes[product.type] || ['#eef3f8', '#0b5cad'];
   return (
-    <svg viewBox="0 0 184 140" role="img" aria-label={product.name} className={`h-full w-full ${className}`}>
-      <rect width="184" height="140" fill={bg} />
-      <Shape type={product.type} color={fg} />
+    <svg
+      viewBox="0 0 320 280"
+      preserveAspectRatio="xMidYMid slice"
+      role="img"
+      aria-label={LABELS[product.type] || product.name}
+      className={`h-full w-full ${className}`}
+    >
+      <defs>
+        <radialGradient id={ids.bg} cx="0.5" cy="0.45" r="0.75">
+          <stop offset="0" stopColor="#1a2136" />
+          <stop offset="0.6" stopColor="#0d111b" />
+          <stop offset="1" stopColor="#07080b" />
+        </radialGradient>
+        <linearGradient id={ids.gold} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f6e7c6" />
+          <stop offset="0.55" stopColor="#d4b27a" />
+          <stop offset="1" stopColor="#8f6f3e" />
+        </linearGradient>
+        <radialGradient id={ids.glow} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#d4b27a" stopOpacity="0.18" />
+          <stop offset="1" stopColor="#d4b27a" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="320" height="280" fill={`url(#${ids.bg})`} />
+      <circle cx="170" cy="140" r="120" fill={`url(#${ids.glow})`} />
+      <circle cx="170" cy="140" r="104" fill="none" stroke="#d4b27a" strokeOpacity="0.08" />
+      <Lines type={product.type} gold={`url(#${ids.gold})`} />
+      <g stroke="#d4b27a" strokeOpacity="0.3" strokeWidth="0.8">
+        <path d="M16 16 h14 M16 16 v14 M304 16 h-14 M304 16 v14 M16 264 h14 M16 264 v-14 M304 264 h-14 M304 264 v-14" />
+      </g>
     </svg>
   );
 }

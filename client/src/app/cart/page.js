@@ -5,61 +5,78 @@ import { useCart } from '@/context/CartContext';
 import useHydrated from '@/lib/useHydrated';
 import ProductArt from '@/components/ProductArt';
 import OrderSummary from '@/components/OrderSummary';
+import PageShell from '@/components/lux/PageShell';
 import { formatPrice } from '@/lib/format';
 
 export default function CartPage() {
   const { items, ready, subtotal, setQuantity, remove } = useCart();
   const hydrated = useHydrated();
 
-  if (!ready || !hydrated) return <p className="py-16 text-center text-slate-500">Loading cart…</p>;
+  if (!ready || !hydrated) {
+    return <p className="pt-48 text-center text-[11px] uppercase tracking-[0.34em] text-dim">Opening your bag…</p>;
+  }
 
   if (items.length === 0) {
     return (
-      <div className="container-page py-24 text-center">
-        <h1 className="text-2xl font-bold">Your cart is empty</h1>
-        <p className="mt-2 text-slate-600">Add some windshield care essentials to get started.</p>
-        <Link href="/products" className="btn-primary mt-6">Browse products</Link>
-      </div>
+      <PageShell eyebrow="Your bag" title="Quietly" accent="empty.">
+        <div className="flex flex-col items-start gap-8 border-t border-line pt-12">
+          <p className="max-w-md text-[17px] leading-[1.8] text-mute">
+            Nothing has been chosen yet. Begin with the collection: four essentials for a windshield that stays immaculate.
+          </p>
+          <Link href="/products" data-magnetic className="btn-primary h-14 px-9">Enter the collection →</Link>
+        </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="container-page py-8">
-      <h1 className="mb-6 text-3xl font-bold">Cart</h1>
-      <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
-        <ul className="space-y-4">
+    <PageShell
+      eyebrow="Your bag"
+      title="Selected"
+      accent="pieces."
+      aside={<p className="text-[11px] uppercase tracking-[0.3em] text-dim">{items.reduce((n, i) => n + i.quantity, 0)} items</p>}
+    >
+      <div className="grid gap-14 lg:grid-cols-[1fr_400px]">
+        <ul className="border-t border-line">
           {items.map((item) => (
-            <li key={item.productId} className="card flex gap-4 p-4">
-              <Link href={`/products/${item.slug}`} className="h-20 w-28 shrink-0 overflow-hidden rounded-lg">
+            <li key={item.productId} className="grid grid-cols-[96px_1fr] gap-6 border-b border-line py-8 sm:grid-cols-[140px_1fr] sm:gap-8">
+              <Link href={`/products/${item.slug}`} data-cursor="View" className="block aspect-square overflow-hidden rounded-2xl border border-line">
                 <ProductArt product={item} />
               </Link>
-              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="flex-1">
-                  <Link href={`/products/${item.slug}`} className="font-medium hover:text-brand">{item.name}</Link>
-                  <p className="text-sm text-slate-500">{formatPrice(item.price)} each</p>
+              <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                <div className="min-w-0">
+                  {item.type && <p className="text-[10px] uppercase tracking-[0.3em] text-gold">{item.type}</p>}
+                  <Link href={`/products/${item.slug}`} className="display mt-2 block text-2xl leading-tight text-ivory hover:text-gold-light">
+                    {item.name}
+                  </Link>
+                  <p className="mt-2 text-[13px] text-dim">{formatPrice(item.price)} each</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center rounded-lg ring-1 ring-slate-300">
+                <div className="flex items-center gap-6">
+                  <div className="flex h-11 items-center rounded-full border border-line-strong">
                     <button
-                      className="px-3 py-1.5 disabled:opacity-40"
+                      className="grid h-11 w-10 place-items-center text-mute transition-colors hover:text-gold-light disabled:opacity-30"
                       onClick={() => setQuantity(item.productId, item.quantity - 1)}
                       disabled={item.quantity <= 1}
-                      aria-label="Decrease quantity"
+                      aria-label={`Decrease quantity of ${item.name}`}
                     >
                       −
                     </button>
-                    <span className="w-8 text-center text-sm" aria-live="polite">{item.quantity}</span>
+                    <span className="w-7 text-center text-sm tabular-nums" aria-live="polite">{item.quantity}</span>
                     <button
-                      className="px-3 py-1.5 disabled:opacity-40"
+                      className="grid h-11 w-10 place-items-center text-mute transition-colors hover:text-gold-light disabled:opacity-30"
                       onClick={() => setQuantity(item.productId, item.quantity + 1)}
                       disabled={item.quantity >= Math.min(item.stock, 99)}
-                      aria-label="Increase quantity"
+                      aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
                     </button>
                   </div>
-                  <span className="w-20 text-right font-semibold">{formatPrice(item.price * item.quantity)}</span>
-                  <button onClick={() => remove(item.productId)} className="text-sm text-red-600 hover:underline">
+                  <span className="w-24 text-right text-[15px] tabular-nums text-ivory">{formatPrice(item.price * item.quantity)}</span>
+                  <button
+                    onClick={() => remove(item.productId)}
+                    className="text-[11px] uppercase tracking-[0.22em] text-dim transition-colors hover:text-rose-200"
+                    aria-label={`Remove ${item.name}`}
+                  >
                     Remove
                   </button>
                 </div>
@@ -68,9 +85,10 @@ export default function CartPage() {
           ))}
         </ul>
         <OrderSummary subtotal={subtotal}>
-          <Link href="/checkout" className="btn-primary w-full">Proceed to checkout</Link>
+          <Link href="/checkout" data-magnetic="0.2" className="btn-primary h-14 w-full">Proceed to checkout</Link>
+          <Link href="/products" className="link-lux mx-auto flex w-fit">Continue browsing</Link>
         </OrderSummary>
       </div>
-    </div>
+    </PageShell>
   );
 }

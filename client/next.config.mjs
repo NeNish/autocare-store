@@ -5,6 +5,8 @@ const nextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
+    // The repo root also has a lockfile (for the `npm run dev` helper); this app lives here
+    root: import.meta.dirname,
     rules: {
       '*.css': {
         loaders: ['@tailwindcss/turbopack'],

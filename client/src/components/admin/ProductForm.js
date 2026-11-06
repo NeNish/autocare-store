@@ -63,7 +63,7 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
   return (
     <form onSubmit={onSubmit} className="card space-y-4 p-6" noValidate>
       <h3 className="text-lg font-semibold">{product ? 'Edit product' : 'New product'}</h3>
-      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p role="alert" className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="label" htmlFor="p-name">Name</label>

@@ -2,7 +2,7 @@ import { STATUS_STYLES } from '@/lib/format';
 
 export default function StatusBadge({ status }) {
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLES[status] || ''}`}>
+    <span className={`inline-block rounded-full border px-3 py-1 text-[10px] font-medium uppercase tracking-[0.22em] ${STATUS_STYLES[status] || ''}`}>
       {status}
     </span>
   );

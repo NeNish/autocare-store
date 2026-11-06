@@ -48,18 +48,18 @@ export default function CategoriesPanel({ categories, onChange }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <ul className="card divide-y divide-slate-100">
-        {categories.length === 0 && <li className="p-6 text-sm text-slate-500">No categories yet.</li>}
+      <ul className="card divide-y divide-line">
+        {categories.length === 0 && <li className="p-6 text-sm text-dim">No categories yet.</li>}
         {categories.map((c) => (
           <li key={c._id} className="flex items-start gap-4 p-4">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-mist text-sm font-bold">{c.number ?? '–'}</span>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-white/[0.05] text-sm font-bold">{c.number ?? '–'}</span>
             <div className="flex-1">
               <p className="font-medium">{c.name}</p>
-              <p className="text-sm text-slate-600">{c.description}</p>
-              <p className="text-xs text-slate-500">{c.productCount} products</p>
+              <p className="text-sm text-mute">{c.description}</p>
+              <p className="text-xs text-dim">{c.productCount} products</p>
             </div>
             <button
-              className="text-sm text-brand hover:underline"
+              className="text-sm text-gold hover:underline"
               onClick={() => {
                 setEditingId(c._id);
                 setForm({ number: c.number ?? '', name: c.name, description: c.description || '' });
@@ -67,14 +67,14 @@ export default function CategoriesPanel({ categories, onChange }) {
             >
               Edit
             </button>
-            <button className="text-sm text-red-600 hover:underline" onClick={() => remove(c)}>Delete</button>
+            <button className="text-sm text-rose-200 hover:underline" onClick={() => remove(c)}>Delete</button>
           </li>
         ))}
       </ul>
 
       <form onSubmit={save} className="card h-fit space-y-3 p-5" noValidate>
         <h3 className="font-semibold">{editingId ? 'Edit category' : 'New category'}</h3>
-        {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {error && <p role="alert" className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
         <div>
           <label className="label" htmlFor="c-num">Number</label>
           <input id="c-num" type="number" min="1" className="input" value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} />
