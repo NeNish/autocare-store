@@ -5,7 +5,7 @@ import { clientApi, errorMessage } from '@/lib/api';
 
 const TYPES = ['Wiper Blades', 'Washer Fluid', 'Rain Repellent', 'Microfiber Towel'];
 
-const empty = { name: '', category: '', type: '', price: '', stock: '', description: '', image: '', features: '', isActive: true };
+const empty = { name: '', category: '', type: '', price: '', stock: '', description: '', image: '', features: '', bladeLengths: '', connectors: '', isActive: true };
 
 export default function ProductForm({ product, categories, onSaved, onCancel }) {
   const [form, setForm] = useState(() =>
@@ -15,6 +15,8 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
           ...product,
           category: product.category?._id || product.category || '',
           features: (product.features || []).join('\n'),
+          bladeLengths: (product.bladeLengthsIn || []).join(', '),
+          connectors: (product.connectors || []).join(', '),
           image: product.image || '',
           description: product.description || '',
           type: product.type || '',
@@ -31,6 +33,9 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
     setError('');
     if (!form.name.trim()) return setError('Name is required');
     if (form.price === '' || Number(form.price) < 0) return setError('Price must be 0 or more');
+    if (form.bladeLengths.split(',').map((x) => x.trim()).filter(Boolean).some((x) => !(Number(x) >= 8 && Number(x) <= 40))) {
+      return setError('Blade lengths must be numbers between 8 and 40 (inches), separated by commas');
+    }
     if (form.stock === '' || !Number.isInteger(Number(form.stock)) || Number(form.stock) < 0) {
       return setError('Stock must be a whole number, 0 or more');
     }
@@ -44,6 +49,8 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
       description: form.description.trim(),
       image: form.image.trim(),
       features: form.features.split('\n').map((s) => s.trim()).filter(Boolean),
+      bladeLengthsIn: form.bladeLengths.split(',').map((s) => s.trim()).filter(Boolean).map(Number),
+      connectors: form.connectors.split(',').map((s) => s.trim()).filter(Boolean),
       isActive: form.isActive,
     };
 
@@ -101,6 +108,15 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
         <div className="sm:col-span-2">
           <label className="label" htmlFor="p-feat">Features (one per line)</label>
           <textarea id="p-feat" rows={3} className="input" value={form.features} onChange={set('features')} />
+        </div>
+        <div>
+          <label className="label" htmlFor="p-lengths">Blade lengths, inches (wiper blades)</label>
+          <input id="p-lengths" className="input" value={form.bladeLengths} onChange={set('bladeLengths')} placeholder="e.g. 22, 16" />
+          <p className="mt-1 text-xs text-dim">From the packaging. Used by the compatibility finder.</p>
+        </div>
+        <div>
+          <label className="label" htmlFor="p-conn">Arm connectors</label>
+          <input id="p-conn" className="input" value={form.connectors} onChange={set('connectors')} placeholder="e.g. J-hook, U-hook" />
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={form.isActive} onChange={set('isActive')} />

@@ -2,26 +2,27 @@
 
 import { useEffect, useRef } from 'react';
 
-// The opening sequence. It is pure CSS (see .intro in globals.css) so it finishes
-// even before JavaScript loads; this component only lets visitors skip it.
-// It plays once per browser session and never for reduced-motion visitors.
+// Opening: a vehicle "system check". Pure CSS (see .intro in globals.css), so it
+// always completes; this component only lets visitors skip it. Once per session,
+// never for reduced-motion visitors.
+const CHECKS = ['Rain sensor', 'Wiper system', 'Glass surface', 'Washer circuit'];
+
 export default function Intro() {
   const ref = useRef(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Finishing also releases the hero's entrance animations (see --hero-delay)
     const finish = () => {
       el.classList.add('is-done');
       document.documentElement.classList.add('intro-seen');
     };
     const onKey = (e) => {
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') finish();
+      if (['Escape', 'Enter', ' '].includes(e.key)) finish();
     };
     el.addEventListener('click', finish);
     window.addEventListener('keydown', onKey, { once: true });
-    const t = setTimeout(finish, 3900);
+    const t = setTimeout(finish, 3300);
     return () => {
       clearTimeout(t);
       el.removeEventListener('click', finish);
@@ -31,42 +32,25 @@ export default function Intro() {
 
   return (
     <div ref={ref} className="intro" aria-hidden="true">
-      <div
-        className="absolute inset-0"
-        style={{ background: 'radial-gradient(60% 50% at 50% 55%, #1a1f30 0%, #07080b 70%)' }}
-      />
-      <div className="relative flex flex-col items-center gap-10">
-        <svg width="168" height="168" viewBox="0 0 200 200" fill="none">
-          <defs>
-            <linearGradient id="intro-g" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#F6E7C6" />
-              <stop offset="0.5" stopColor="#D4B27A" />
-              <stop offset="1" stopColor="#8F6F3E" />
-            </linearGradient>
-            <linearGradient id="intro-sweep" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0" stopColor="#F1DFB8" stopOpacity="0.9" />
-              <stop offset="1" stopColor="#F1DFB8" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <circle className="intro__ring" cx="100" cy="100" r="92" stroke="url(#intro-g)" strokeWidth="0.8" />
-          <circle cx="100" cy="100" r="78" stroke="#D4B27A" strokeOpacity="0.15" strokeWidth="0.6" />
-          <g className="intro__sweep">
-            <path d="M100 150 L100 40" stroke="url(#intro-sweep)" strokeWidth="1.2" strokeLinecap="round" />
-          </g>
-          <text
-            x="100"
-            y="116"
-            textAnchor="middle"
-            fill="url(#intro-g)"
-            style={{ font: '300 54px var(--font-display)', fontStyle: 'italic' }}
-          >
-            A
-          </text>
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(60% 50% at 50% 50%, #0c1726 0%, #050608 70%)' }} />
+      <div className="intro__scan absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-accent-light to-transparent shadow-[0_0_24px_#2f8cff]" />
+      <div className="relative flex flex-col items-center gap-9">
+        <svg width="132" height="132" viewBox="0 0 200 200" fill="none">
+          <circle className="intro__ring" cx="100" cy="100" r="92" stroke="#8fd0ff" strokeWidth="1" />
+          <circle cx="100" cy="100" r="76" stroke="#c3cad5" strokeOpacity="0.15" strokeWidth="0.8" />
+          <path d="M60 128 Q100 60 140 128" stroke="#eaf6ff" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="100" cy="128" r="3" fill="#2f8cff" />
         </svg>
-        <p className="intro__word display text-[15px] uppercase text-gold-light sm:text-lg">AutoCare</p>
-        <p className="intro__tag text-[10px] uppercase tracking-[0.5em] text-dim">The atelier of clarity</p>
+        <p className="intro__word font-mono text-[13px] uppercase text-ice sm:text-[15px]">AutoCare Vision</p>
+        <ul className="grid grid-cols-2 gap-x-10 gap-y-2 font-mono text-[10px] uppercase tracking-[0.24em] text-dim">
+          {CHECKS.map((c, i) => (
+            <li key={c} className="intro__check flex items-center gap-3" style={{ animationDelay: `${0.9 + i * 0.22}s` }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-light" /> {c} <span className="text-accent-light">OK</span>
+            </li>
+          ))}
+        </ul>
       </div>
-      <p className="absolute bottom-10 text-[10px] uppercase tracking-[0.4em] text-dim/70">Click to enter</p>
+      <p className="hud absolute bottom-10">Click to enter</p>
     </div>
   );
 }

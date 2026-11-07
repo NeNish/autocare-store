@@ -6,9 +6,10 @@ import PageShell from '@/components/lux/PageShell';
 import ProductsPanel from '@/components/admin/ProductsPanel';
 import OrdersPanel from '@/components/admin/OrdersPanel';
 import CategoriesPanel from '@/components/admin/CategoriesPanel';
+import FitmentsPanel from '@/components/admin/FitmentsPanel';
 import { clientApi } from '@/lib/api';
 
-const TABS = ['Orders', 'Products', 'Categories'];
+const TABS = ['Orders', 'Products', 'Vehicle fitments', 'Categories'];
 
 function Dashboard() {
   const [tab, setTab] = useState('Orders');
@@ -32,7 +33,7 @@ function Dashboard() {
             role="tab"
             aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className={`-mb-px border-b py-4 text-[11px] uppercase tracking-[0.3em] transition-colors ${tab === t ? 'border-gold text-gold-light' : 'border-transparent text-mute hover:text-ivory'}`}
+            className={`-mb-px border-b py-4 text-[11px] uppercase tracking-[0.3em] transition-colors ${tab === t ? 'border-accent text-accent-light' : 'border-transparent text-mute hover:text-frost'}`}
           >
             {t}
           </button>
@@ -40,6 +41,7 @@ function Dashboard() {
       </div>
       {tab === 'Orders' && <OrdersPanel />}
       {tab === 'Products' && <ProductsPanel categories={categories} />}
+      {tab === 'Vehicle fitments' && <FitmentsPanel />}
       {tab === 'Categories' && <CategoriesPanel categories={categories} onChange={loadCategories} />}
     </>
   );
@@ -47,7 +49,7 @@ function Dashboard() {
 
 export default function AdminPage() {
   return (
-    <PageShell eyebrow="Atelier admin" title="The" accent="atelier.">
+    <PageShell eyebrow="Admin" title="Control" accent="centre.">
       <RequireAuth admin>
         <Dashboard />
       </RequireAuth>

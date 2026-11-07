@@ -24,7 +24,7 @@ export default function ProductFilters({ categories }) {
   const activeType = types.includes(params.get('q')) ? params.get('q') : '';
   const chip = (active) =>
     `h-10 rounded-full border px-5 text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 ${
-      active ? 'border-gold bg-gold/15 text-gold-light' : 'border-line text-mute hover:border-line-strong hover:text-ivory'
+      active ? 'border-accent bg-accent/15 text-accent-light' : 'border-line text-mute hover:border-line-strong hover:text-frost'
     }`;
 
   return (
@@ -75,7 +75,7 @@ export default function ProductFilters({ categories }) {
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search — e.g. 22 inch"
           />
-          <button type="submit" aria-label="Search" className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-full text-gold hover:bg-gold/10">
+          <button type="submit" aria-label="Search" className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-full text-accent hover:bg-accent/10">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
           </button>
         </form>

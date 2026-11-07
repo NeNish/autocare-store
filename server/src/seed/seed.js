@@ -77,6 +77,8 @@ const products = [
     description:
       'Frameless beam blades with a universal hook adapter. Fits most hatchbacks and compact sedans.',
     features: ['Fits J-hook / U-hook arms', 'Natural rubber with graphite coating', 'Quiet, streak-free wipe'],
+    bladeLengthsIn: [16, 22],
+    connectors: ['J-hook', 'U-hook'],
   },
   {
     name: 'Universal Hook-Type Wiper Blade Pair 18" + 24"',
@@ -85,6 +87,8 @@ const products = [
     stock: 45,
     description: 'Frameless beam blade pair for sedans and compact SUVs with hook-type wiper arms.',
     features: ['Fits J-hook / U-hook arms', 'UV and ozone resistant rubber', 'Tool-free install'],
+    bladeLengthsIn: [18, 24],
+    connectors: ['J-hook', 'U-hook'],
   },
   {
     name: 'Universal Hook-Type Wiper Blade Pair 20" + 26"',
@@ -93,6 +97,8 @@ const products = [
     stock: 35,
     description: 'Frameless beam blade pair for SUVs and MPVs with hook-type wiper arms.',
     features: ['Fits J-hook / U-hook arms', 'All-weather spoiler design', 'Tool-free install'],
+    bladeLengthsIn: [20, 26],
+    connectors: ['J-hook', 'U-hook'],
   },
 ];
 

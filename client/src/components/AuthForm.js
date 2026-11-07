@@ -47,17 +47,17 @@ export default function AuthForm({ mode }) {
   return (
     <div className="grid min-h-[100svh] lg:grid-cols-2">
       <div className="relative hidden overflow-hidden border-r border-line lg:block">
-        <div aria-hidden="true" className="absolute inset-0" style={{ background: 'radial-gradient(80% 70% at 30% 30%, #18213a 0%, #0b1020 45%, #07080b 85%)' }} />
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: 'radial-gradient(80% 70% at 30% 30%, #0c1726 0%, #070c14 45%, #050608 85%)' }} />
         <div aria-hidden="true" className="absolute inset-0 opacity-70"><RainCanvas /></div>
         <div className="relative flex h-full flex-col justify-end p-16 pb-20">
-          <p className="eyebrow">The house of AutoCare</p>
-          <p className="display mt-8 text-[clamp(3rem,5vw,5.5rem)] text-ivory">
-            {isRegister ? 'Begin your' : 'Welcome'}
+          <p className="eyebrow">AutoCare account</p>
+          <p className="display mt-8 text-[clamp(3rem,5vw,5.5rem)] text-frost">
+            {isRegister ? 'Create your' : 'Welcome'}
             <br />
-            <em className="gold-text">{isRegister ? 'membership.' : 'back.'}</em>
+            <span className="accent-text">{isRegister ? 'account.' : 'back.'}</span>
           </p>
           <p className="mt-8 max-w-sm text-[15px] leading-[1.8] text-mute">
-            Your orders, your bag and your preferred pieces, kept in one place.
+            Track orders, check out faster and keep your bag across devices.
           </p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function AuthForm({ mode }) {
         <form onSubmit={onSubmit} className="w-full max-w-md animate-rise space-y-7" noValidate>
           <div>
             <p className="eyebrow">{isRegister ? 'Create an account' : 'Sign in'}</p>
-            <h1 className="display mt-5 text-6xl text-ivory">{isRegister ? 'Join the house' : 'Sign in'}</h1>
+            <h1 className="display mt-5 text-6xl text-frost">{isRegister ? 'Create account' : 'Sign in'}</h1>
           </div>
           {error && (
             <p role="alert" className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</p>
@@ -103,7 +103,7 @@ export default function AuthForm({ mode }) {
 
           <p className="text-center text-[14px] text-mute">
             {isRegister ? 'Already a member? ' : 'New to AutoCare? '}
-            <Link href={`${isRegister ? '/login' : '/register'}?next=${encodeURIComponent(next)}`} className="text-gold-light underline decoration-gold/40 underline-offset-4 hover:decoration-gold">
+            <Link href={`${isRegister ? '/login' : '/register'}?next=${encodeURIComponent(next)}`} className="text-accent-light underline decoration-accent/40 underline-offset-4 hover:decoration-accent">
               {isRegister ? 'Sign in' : 'Create an account'}
             </Link>
           </p>

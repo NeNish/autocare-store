@@ -77,8 +77,8 @@ function CheckoutForm() {
     <form onSubmit={placeOrder} noValidate className="grid gap-14 lg:grid-cols-[1fr_400px]">
       <div>
         <div className="flex items-baseline gap-5">
-          <span className="display text-3xl italic text-gold">I.</span>
-          <h2 className="display text-4xl text-ivory">Delivery address</h2>
+          <span className="display text-3xl text-accent">I.</span>
+          <h2 className="display text-4xl text-frost">Delivery address</h2>
         </div>
         <div className="hairline mt-8" />
         {serverError && (
@@ -104,14 +104,14 @@ function CheckoutForm() {
         </div>
 
         <div className="mt-16 flex items-baseline gap-5">
-          <span className="display text-3xl italic text-gold">II.</span>
-          <h2 className="display text-4xl text-ivory">Payment</h2>
+          <span className="display text-3xl text-accent">II.</span>
+          <h2 className="display text-4xl text-frost">Payment</h2>
         </div>
         <div className="hairline mt-8" />
         <div className="card mt-8 flex items-center gap-5 p-6">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold/60 text-gold">₹</span>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-accent/60 text-accent">₹</span>
           <div>
-            <p className="text-[15px] text-ivory">Cash on delivery</p>
+            <p className="text-[15px] text-frost">Cash on delivery</p>
             <p className="mt-1 text-[13px] text-dim">Pay when your order arrives. Online payments are coming soon.</p>
           </div>
         </div>
@@ -136,7 +136,7 @@ function CheckoutForm() {
 
 export default function CheckoutPage() {
   return (
-    <PageShell eyebrow="Checkout" title="Almost" accent="yours.">
+    <PageShell eyebrow="Checkout" title="Secure" accent="checkout.">
       <RequireAuth>
         <CheckoutForm />
       </RequireAuth>

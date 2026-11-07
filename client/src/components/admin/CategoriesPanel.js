@@ -59,7 +59,7 @@ export default function CategoriesPanel({ categories, onChange }) {
               <p className="text-xs text-dim">{c.productCount} products</p>
             </div>
             <button
-              className="text-sm text-gold hover:underline"
+              className="text-sm text-accent hover:underline"
               onClick={() => {
                 setEditingId(c._id);
                 setForm({ number: c.number ?? '', name: c.name, description: c.description || '' });

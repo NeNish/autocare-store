@@ -80,14 +80,14 @@ export default function Cursor() {
       <div
         ref={ring}
         data-state="idle"
-        className="absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full border border-gold/60 opacity-0 transition-[width,height,background,border-color,opacity] duration-500 ease-out data-[state=hidden]:!opacity-0 data-[state=hover]:h-16 data-[state=hover]:w-16 data-[state=hover]:border-gold/80 data-[state=hover]:bg-gold/10 data-[state=label]:h-24 data-[state=label]:w-24 data-[state=label]:border-transparent data-[state=label]:bg-gold-light/95"
+        className="absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full border border-accent/60 opacity-0 transition-[width,height,background,border-color,opacity] duration-500 ease-out data-[state=hidden]:!opacity-0 data-[state=hover]:h-16 data-[state=hover]:w-16 data-[state=hover]:border-accent/80 data-[state=hover]:bg-accent/10 data-[state=label]:h-24 data-[state=label]:w-24 data-[state=label]:border-transparent data-[state=label]:bg-accent-light/95"
       >
         <span ref={label} className="text-[11px] font-semibold uppercase tracking-[0.2em] text-obsidian" />
       </div>
       <div
         ref={dot}
         data-state="idle"
-        className="absolute left-0 top-0 h-1.5 w-1.5 rounded-full bg-gold-light opacity-0 transition-opacity duration-300 data-[state=hidden]:!opacity-0"
+        className="absolute left-0 top-0 h-1.5 w-1.5 rounded-full bg-accent-light opacity-0 transition-opacity duration-300 data-[state=hidden]:!opacity-0"
       />
     </div>
   );

@@ -39,6 +39,10 @@ const productFields = (optional) => {
     body('features').optional().isArray({ max: 20 }),
     body('features.*').optional().isString().trim().isLength({ max: 200 }),
     body('isActive').optional().isBoolean().toBoolean(),
+    body('bladeLengthsIn').optional().isArray({ max: 3 }).withMessage('Up to 3 blade lengths'),
+    body('bladeLengthsIn.*').optional().isFloat({ min: 8, max: 40 }).withMessage('Blade lengths must be 8–40 inches').toFloat(),
+    body('connectors').optional().isArray({ max: 8 }),
+    body('connectors.*').optional().isString().trim().isLength({ min: 1, max: 40 }),
   ];
 };
 
@@ -68,7 +72,50 @@ const orderStatus = [
   body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).withMessage('Invalid status'),
 ];
 
+const CONNECTORS = ['J-hook', 'U-hook', 'Pinch tab', 'Push button', 'Side pin', 'Bayonet', 'Other'];
+const year = new Date().getFullYear() + 1;
+const inches = (field, required) => {
+  const c = body(field);
+  return (required ? c : c.optional({ values: 'null' }))
+    .isFloat({ min: 8, max: 40 })
+    .withMessage(`${field} must be between 8 and 40 inches`)
+    .toFloat();
+};
+const fitment = [
+  body('make').trim().notEmpty().withMessage('Make is required').isLength({ max: 60 }),
+  body('model').trim().notEmpty().withMessage('Model is required').isLength({ max: 80 }),
+  body('variant').optional().trim().isLength({ max: 80 }),
+  body('yearFrom').isInt({ min: 1950, max: year }).withMessage('Valid start year is required').toInt(),
+  body('yearTo').optional({ values: 'null' }).isInt({ min: 1950, max: year }).withMessage('Valid end year').toInt(),
+  inches('driverIn', true),
+  inches('passengerIn', true),
+  inches('rearIn', false),
+  body('connector').isIn(CONNECTORS).withMessage(`Connector must be one of: ${CONNECTORS.join(', ')}`),
+  body('source').trim().isLength({ min: 3, max: 300 }).withMessage('A verification source is required (e.g. owner’s manual page or OEM catalogue)'),
+  body('notes').optional().trim().isLength({ max: 500 }),
+];
+const fitLookup = [
+  query('make').trim().notEmpty().isLength({ max: 60 }),
+  query('model').trim().notEmpty().isLength({ max: 80 }),
+  query('year').isInt({ min: 1950, max: year }).toInt(),
+];
+const fitMatch = [
+  query('driver').isFloat({ min: 8, max: 40 }).withMessage('Driver-side length must be 8–40 inches').toFloat(),
+  query('passenger').isFloat({ min: 8, max: 40 }).withMessage('Passenger-side length must be 8–40 inches').toFloat(),
+  query('connector').optional({ values: 'falsy' }).isIn(CONNECTORS),
+];
+const assistant = [
+  body('messages').isArray({ min: 1, max: 16 }).withMessage('Messages are required'),
+  body('messages.*.role').isIn(['user', 'assistant']),
+  body('messages.*.content').isString().trim().isLength({ min: 1, max: 1200 }).withMessage('Each message must be 1–1200 characters'),
+];
+
 module.exports = {
+  CONNECTORS,
+  fitment,
+  fitLookup,
+  fitMatch,
+  assistant,
   mongoId,
   register,
   login,

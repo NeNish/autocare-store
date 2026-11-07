@@ -69,7 +69,7 @@ export default function OrdersPanel() {
               {shown.map((o) => (
                 <tr key={o._id}>
                   <td className="px-4 py-3 font-mono">
-                    <Link href={`/account/orders/${o._id}`} className="text-gold hover:underline">#{o._id.slice(-8).toUpperCase()}</Link>
+                    <Link href={`/account/orders/${o._id}`} className="text-accent hover:underline">#{o._id.slice(-8).toUpperCase()}</Link>
                   </td>
                   <td className="px-4 py-3">
                     {o.user?.name}
@@ -103,7 +103,7 @@ function Stat({ label, value }) {
   return (
     <div className="card p-4">
       <p className="text-xs uppercase tracking-wide text-dim">{label}</p>
-      <p className="display mt-2 text-4xl tabular-nums text-gold-light">{value}</p>
+      <p className="display mt-2 text-4xl tabular-nums text-accent-light">{value}</p>
     </div>
   );
 }

@@ -12,6 +12,10 @@ const productSchema = new mongoose.Schema(
     stock: { type: Number, required: true, min: 0, default: 0 },
     image: { type: String, trim: true },
     features: [{ type: String, trim: true, maxlength: 200 }],
+    // Wiper blades only: lengths in inches (a pair has two) and the arm connectors they fit.
+    // These drive the vehicle compatibility finder, so enter them from the product's packaging.
+    bladeLengthsIn: [{ type: Number, min: 8, max: 40 }],
+    connectors: [{ type: String, trim: true, maxlength: 40 }],
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

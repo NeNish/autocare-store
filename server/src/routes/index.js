@@ -7,6 +7,8 @@ const auth = require('../controllers/authController');
 const categories = require('../controllers/categoryController');
 const products = require('../controllers/productController');
 const orders = require('../controllers/orderController');
+const fitments = require('../controllers/fitmentController');
+const assistant = require('../controllers/assistantController');
 
 const router = express.Router();
 const adminOnly = [protect, authorize('admin')];
@@ -48,5 +50,26 @@ router.get('/orders', adminOnly, orders.list);
 router.get('/orders/:id', protect, v.mongoId('id'), validate, orders.get);
 router.post('/orders/:id/cancel', protect, v.mongoId('id'), validate, orders.cancel);
 router.patch('/orders/:id/status', adminOnly, v.mongoId('id'), v.orderStatus, validate, orders.updateStatus);
+
+// Vehicle compatibility (public lookups; admin-managed verified records)
+router.get('/fitments/makes', fitments.makes);
+router.get('/fitments/models', fitments.models);
+router.get('/fitments/years', fitments.years);
+router.get('/fitments/lookup', v.fitLookup, validate, fitments.lookup);
+router.get('/fitments/match', v.fitMatch, validate, fitments.match);
+router.get('/fitments', adminOnly, fitments.list);
+router.post('/fitments', adminOnly, v.fitment, validate, fitments.create);
+router.put('/fitments/:id', adminOnly, v.mongoId('id'), v.fitment, validate, fitments.update);
+router.delete('/fitments/:id', adminOnly, v.mongoId('id'), validate, fitments.remove);
+
+// Windshield care assistant (rate limited: each AI answer has a cost)
+const assistantLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 12,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { success: false, message: 'You are sending messages quickly. Please wait a moment.' },
+});
+router.post('/assistant', assistantLimiter, v.assistant, validate, assistant.chat);
 
 module.exports = router;

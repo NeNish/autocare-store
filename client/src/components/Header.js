@@ -8,9 +8,10 @@ import { useCart } from '@/context/CartContext';
 import useHydrated from '@/lib/useHydrated';
 
 const PRIMARY = [
-  { href: '/products', label: 'Collection' },
-  { href: '/#ritual', label: 'The Ritual' },
-  { href: '/#signature', label: 'Signature' },
+  { href: '/simulator', label: 'Simulator' },
+  { href: '/products', label: 'Products' },
+  { href: '/fit', label: 'Find your fit' },
+  { href: '/compare', label: 'Compare' },
 ];
 
 function NavLink({ href, children, onClick, className = '' }) {
@@ -21,20 +22,27 @@ function NavLink({ href, children, onClick, className = '' }) {
       href={href}
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`group relative py-2 text-[11px] uppercase tracking-[0.28em] transition-colors duration-300 ${active ? 'text-gold-light' : 'text-mute hover:text-ivory'} ${className}`}
+      className={`group relative py-2 text-[11px] uppercase tracking-[0.28em] transition-colors duration-300 ${active ? 'text-accent-light' : 'text-mute hover:text-frost'} ${className}`}
     >
       {children}
       <span
-        className={`absolute -bottom-0.5 left-0 h-px bg-gold transition-all duration-500 ease-out ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}
+        className={`absolute -bottom-0.5 left-0 h-px bg-accent transition-all duration-500 ease-out ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}
       />
     </Link>
   );
 }
 
 export default function Header() {
-  const { user, isAdmin, logout, loading } = useAuth();
+  const auth = useAuth();
   const cart = useCart();
-  const count = useHydrated() ? cart.count : 0;
+  // The header sits in its own Suspense boundary, so it can hydrate after the
+  // session check has finished. Render the server's view until it has hydrated.
+  const hydrated = useHydrated();
+  const user = hydrated ? auth.user : null;
+  const isAdmin = hydrated && auth.isAdmin;
+  const loading = !hydrated || auth.loading;
+  const { logout } = auth;
+  const count = hydrated ? cart.count : 0;
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -59,7 +67,7 @@ export default function Header() {
 
   const accountLinks = [
     ...(user ? [{ href: '/account/orders', label: 'My orders' }] : []),
-    ...(isAdmin ? [{ href: '/admin', label: 'Atelier admin' }] : []),
+    ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
   ];
 
   return (
@@ -70,10 +78,12 @@ export default function Header() {
     >
       <div className="container-page flex h-20 items-center gap-10 transition-[height] duration-700 group-data-[scrolled=true]/header:h-16">
         <Link href="/" className="group flex items-center gap-3" aria-label="AutoCare home">
-          <span className="grid h-9 w-9 place-items-center rounded-full border border-gold/50 transition-colors duration-500 group-hover:border-gold">
-            <span className="display text-xl italic text-gold-light">A</span>
-          </span>
-          <span className="text-[12px] font-medium uppercase tracking-[0.42em] text-ivory">AutoCare</span>
+          <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true" className="transition-transform duration-700 group-hover:rotate-[-12deg]">
+            <circle cx="20" cy="20" r="19" stroke="#c3cad5" strokeOpacity="0.35" />
+            <path d="M9 27 Q20 8 31 27" stroke="#eaf6ff" strokeWidth="1.6" strokeLinecap="round" />
+            <circle cx="20" cy="27" r="1.8" fill="#2f8cff" />
+          </svg>
+          <span className="font-mono text-[12px] font-medium uppercase tracking-[0.36em] text-frost">AutoCare</span>
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-9 lg:flex">
@@ -90,7 +100,7 @@ export default function Header() {
             {loading ? null : user ? (
               <>
                 <span className="text-[11px] uppercase tracking-[0.28em] text-dim">{user.name.split(' ')[0]}</span>
-                <button onClick={handleLogout} className="text-[11px] uppercase tracking-[0.28em] text-mute transition-colors hover:text-ivory">
+                <button onClick={handleLogout} className="text-[11px] uppercase tracking-[0.28em] text-mute transition-colors hover:text-frost">
                   Sign out
                 </button>
               </>
@@ -102,10 +112,10 @@ export default function Header() {
             href="/cart"
             data-magnetic="0.3"
             aria-label={`Bag, ${count} ${count === 1 ? 'item' : 'items'}`}
-            className="relative flex h-11 items-center gap-3 rounded-full border border-line-strong px-5 text-[11px] uppercase tracking-[0.28em] text-ivory transition-[border-color,transform] duration-500 hover:border-gold/70"
+            className="relative flex h-11 items-center gap-3 rounded-full border border-line-strong px-5 text-[11px] uppercase tracking-[0.28em] text-frost transition-[border-color,transform] duration-500 hover:border-accent/70"
           >
             Bag
-            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold-light px-1 text-[10px] font-semibold tracking-normal text-obsidian">
+            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent-light px-1 text-[10px] font-semibold tracking-normal text-obsidian">
               {count}
             </span>
           </Link>
@@ -117,8 +127,8 @@ export default function Header() {
             aria-controls="mobile-menu"
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
-            <span className={`absolute left-2.5 right-2.5 h-px bg-ivory transition-transform duration-500 ${open ? 'top-1/2 rotate-45' : 'top-[18px]'}`} />
-            <span className={`absolute left-2.5 right-2.5 h-px bg-ivory transition-transform duration-500 ${open ? 'top-1/2 -rotate-45' : 'top-[26px]'}`} />
+            <span className={`absolute left-2.5 right-2.5 h-px bg-frost transition-transform duration-500 ${open ? 'top-1/2 rotate-45' : 'top-[18px]'}`} />
+            <span className={`absolute left-2.5 right-2.5 h-px bg-frost transition-transform duration-500 ${open ? 'top-1/2 -rotate-45' : 'top-[26px]'}`} />
           </button>
         </div>
       </div>
@@ -135,10 +145,10 @@ export default function Header() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="display animate-rise border-b border-line py-5 text-5xl text-ivory"
+              className="display animate-rise border-b border-line py-5 text-5xl text-frost"
               style={{ animationDelay: `${80 + i * 70}ms` }}
             >
-              <span className="mr-4 align-top text-xs not-italic tracking-[0.3em] text-gold">0{i + 1}</span>
+              <span className="mr-4 align-top text-xs tracking-[0.3em] text-accent">0{i + 1}</span>
               {l.label}
             </Link>
           ))}

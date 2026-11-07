@@ -24,7 +24,7 @@ export default function RainCanvas({ className = '' }) {
         len: 14 + depth * 46,
         speed: 3 + depth * 13,
         depth,
-        gold: Math.random() < 0.28,
+        accent: Math.random() < 0.28,
         alpha: 0.05 + depth * 0.32,
       };
     };
@@ -46,7 +46,7 @@ export default function RainCanvas({ className = '' }) {
       for (const d of drops) {
         const dx = wind * d.len;
         const grad = ctx.createLinearGradient(d.x, d.y, d.x + dx, d.y + d.len);
-        const c = d.gold ? '241, 223, 184' : '201, 205, 212';
+        const c = d.accent ? '241, 223, 184' : '201, 205, 212';
         grad.addColorStop(0, `rgba(${c}, 0)`);
         grad.addColorStop(1, `rgba(${c}, ${d.alpha})`);
         ctx.strokeStyle = grad;

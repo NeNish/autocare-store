@@ -38,12 +38,12 @@ function OrdersList() {
             data-cursor="View"
             className="group grid grid-cols-[1fr_auto] items-center gap-6 border-b border-line py-8 transition-colors sm:grid-cols-[200px_1fr_auto_auto] sm:gap-10"
           >
-            <span className="font-mono text-[13px] tracking-[0.12em] text-gold">#{o._id.slice(-8).toUpperCase()}</span>
-            <span className="display hidden text-2xl text-ivory transition-transform duration-500 group-hover:translate-x-2 sm:block">
+            <span className="font-mono text-[13px] tracking-[0.12em] text-accent">#{o._id.slice(-8).toUpperCase()}</span>
+            <span className="display hidden text-2xl text-frost transition-transform duration-500 group-hover:translate-x-2 sm:block">
               {formatDate(o.createdAt)} · {o.items.reduce((n, i) => n + i.quantity, 0)} items
             </span>
             <StatusBadge status={o.status} />
-            <span className="w-28 text-right text-[15px] tabular-nums text-ivory">{formatPrice(o.total)}</span>
+            <span className="w-28 text-right text-[15px] tabular-nums text-frost">{formatPrice(o.total)}</span>
           </Link>
         </li>
       ))}

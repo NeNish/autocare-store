@@ -18,12 +18,12 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <PageShell eyebrow="Your bag" title="Quietly" accent="empty.">
+      <PageShell eyebrow="Your bag" title="Your bag is" accent="empty.">
         <div className="flex flex-col items-start gap-8 border-t border-line pt-12">
           <p className="max-w-md text-[17px] leading-[1.8] text-mute">
-            Nothing has been chosen yet. Begin with the collection: four essentials for a windshield that stays immaculate.
+            Nothing added yet. Start with the products, or find blades that fit your vehicle.
           </p>
-          <Link href="/products" data-magnetic className="btn-primary h-14 px-9">Enter the collection →</Link>
+          <Link href="/products" data-magnetic className="btn-primary h-14 px-9">Browse products →</Link>
         </div>
       </PageShell>
     );
@@ -32,8 +32,8 @@ export default function CartPage() {
   return (
     <PageShell
       eyebrow="Your bag"
-      title="Selected"
-      accent="pieces."
+      title="Your"
+      accent="bag."
       aside={<p className="text-[11px] uppercase tracking-[0.3em] text-dim">{items.reduce((n, i) => n + i.quantity, 0)} items</p>}
     >
       <div className="grid gap-14 lg:grid-cols-[1fr_400px]">
@@ -45,8 +45,8 @@ export default function CartPage() {
               </Link>
               <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
                 <div className="min-w-0">
-                  {item.type && <p className="text-[10px] uppercase tracking-[0.3em] text-gold">{item.type}</p>}
-                  <Link href={`/products/${item.slug}`} className="display mt-2 block text-2xl leading-tight text-ivory hover:text-gold-light">
+                  {item.type && <p className="text-[10px] uppercase tracking-[0.3em] text-accent">{item.type}</p>}
+                  <Link href={`/products/${item.slug}`} className="display mt-2 block text-2xl leading-tight text-frost hover:text-accent-light">
                     {item.name}
                   </Link>
                   <p className="mt-2 text-[13px] text-dim">{formatPrice(item.price)} each</p>
@@ -54,7 +54,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-6">
                   <div className="flex h-11 items-center rounded-full border border-line-strong">
                     <button
-                      className="grid h-11 w-10 place-items-center text-mute transition-colors hover:text-gold-light disabled:opacity-30"
+                      className="grid h-11 w-10 place-items-center text-mute transition-colors hover:text-accent-light disabled:opacity-30"
                       onClick={() => setQuantity(item.productId, item.quantity - 1)}
                       disabled={item.quantity <= 1}
                       aria-label={`Decrease quantity of ${item.name}`}
@@ -63,7 +63,7 @@ export default function CartPage() {
                     </button>
                     <span className="w-7 text-center text-sm tabular-nums" aria-live="polite">{item.quantity}</span>
                     <button
-                      className="grid h-11 w-10 place-items-center text-mute transition-colors hover:text-gold-light disabled:opacity-30"
+                      className="grid h-11 w-10 place-items-center text-mute transition-colors hover:text-accent-light disabled:opacity-30"
                       onClick={() => setQuantity(item.productId, item.quantity + 1)}
                       disabled={item.quantity >= Math.min(item.stock, 99)}
                       aria-label={`Increase quantity of ${item.name}`}
@@ -71,7 +71,7 @@ export default function CartPage() {
                       +
                     </button>
                   </div>
-                  <span className="w-24 text-right text-[15px] tabular-nums text-ivory">{formatPrice(item.price * item.quantity)}</span>
+                  <span className="w-24 text-right text-[15px] tabular-nums text-frost">{formatPrice(item.price * item.quantity)}</span>
                   <button
                     onClick={() => remove(item.productId)}
                     className="text-[11px] uppercase tracking-[0.22em] text-dim transition-colors hover:text-rose-200"
@@ -86,7 +86,7 @@ export default function CartPage() {
         </ul>
         <OrderSummary subtotal={subtotal}>
           <Link href="/checkout" data-magnetic="0.2" className="btn-primary h-14 w-full">Proceed to checkout</Link>
-          <Link href="/products" className="link-lux mx-auto flex w-fit">Continue browsing</Link>
+          <Link href="/products" className="link-tech mx-auto flex w-fit">Continue browsing</Link>
         </OrderSummary>
       </div>
     </PageShell>

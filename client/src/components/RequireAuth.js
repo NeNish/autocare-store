@@ -16,7 +16,7 @@ function Guard({ children, admin }) {
 
   if (loading || !user) return <p className="py-24 text-center text-[11px] uppercase tracking-[0.34em] text-dim">Loading…</p>;
   if (admin && !isAdmin) {
-    return <p className="display py-24 text-center text-4xl text-mute">This room is reserved for the atelier.</p>;
+    return <p className="display py-24 text-center text-4xl text-mute">This area is for administrators only.</p>;
   }
   return children;
 }

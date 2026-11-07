@@ -75,7 +75,7 @@ export default function ProductsPanel({ categories }) {
                   <td className={`px-4 py-3 text-right ${p.stock <= 10 ? 'font-semibold text-amber-200' : ''}`}>{p.stock}</td>
                   <td className="px-4 py-3">{p.isActive ? 'Visible' : <span className="text-dim">Hidden</span>}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-right">
-                    <button className="mr-3 text-gold hover:underline" onClick={() => setEditing(p)}>Edit</button>
+                    <button className="mr-3 text-accent hover:underline" onClick={() => setEditing(p)}>Edit</button>
                     <button className="text-rose-200 hover:underline" onClick={() => remove(p)}>Delete</button>
                   </td>
                 </tr>

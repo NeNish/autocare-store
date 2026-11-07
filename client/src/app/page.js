@@ -3,355 +3,219 @@ import { Suspense } from 'react';
 import { serverApi } from '@/lib/api';
 import { formatPrice } from '@/lib/format';
 import ProductArt from '@/components/ProductArt';
-import AddToCartButton from '@/components/AddToCartButton';
-import Price from '@/components/lux/Price';
-import RainCanvas from '@/components/lux/RainCanvas';
-import HeroGlass from '@/components/lux/HeroGlass';
-import CollectionList from '@/components/lux/CollectionList';
+import HeroWindshield from '@/components/vision/HeroWindshield';
+import StoryChapters from '@/components/vision/StoryChapters';
+import WeatherSimulator from '@/components/vision/WeatherSimulator';
+import { FitTeaser, AssistantPrompts } from '@/components/vision/HomeWidgets';
 
-/* ─────────────── Content ─────────────── */
+const STATEMENT =
+  'The windshield is the most important screen in your car. We engineer everything that keeps it clear, in every season and every storm.';
+const LIT = new Set(['screen', 'clear,']);
 
 const LINES = [
-  { numeral: 'I', type: 'Wiper Blades', title: 'Wiper Blades', text: 'Frameless beam blades in pairs, for J-hook and U-hook arms.' },
-  { numeral: 'II', type: 'Rain Repellent', title: 'Rain Repellent', text: 'A hydrophobic veil that makes rain bead and roll away at speed.' },
-  { numeral: 'III', type: 'Washer Fluid', title: 'Washer Fluid', text: 'Concentrated tablets. One dissolves into four litres of streak-free fluid.' },
-  { numeral: 'IV', type: 'Microfiber Towel', title: 'Microfiber', text: 'Waffle-weave towels that lift the last drop without a scratch.' },
+  { type: 'Wiper Blades', title: 'Beam wiper blades', text: 'Frameless pairs for J-hook and U-hook arms.' },
+  { type: 'Rain Repellent', title: 'Rain repellent', text: 'A hydrophobic coat that makes rain bead and run off.' },
+  { type: 'Washer Fluid', title: 'Washer fluid', text: 'Concentrated tablets: one makes four litres.' },
+  { type: 'Microfiber Towel', title: 'Microfiber care', text: 'Waffle-weave cloths for a spotless finish.' },
 ];
-
-const RITUAL = [
-  { verb: 'Cleanse', type: 'Washer Fluid', text: 'Dissolve a single tablet in four litres of water. The glass is washed clean, without streaks and without plastic bottles.' },
-  { verb: 'Repel', type: 'Rain Repellent', text: 'A fine hydrophobic coat. At speed, rain gathers into beads and simply leaves, so the wipers barely need to move.' },
-  { verb: 'Sweep', type: 'Wiper Blades', text: 'Frameless beam blades glide silently across the curve of the glass, leaving one clean, unbroken arc.' },
-  { verb: 'Dry', type: 'Microfiber Towel', text: 'A waffle-weave cloth of 400 GSM lifts the last drop and leaves the glass spotless.' },
-];
-
-const MANIFESTO =
-  'Visibility is the first luxury of every journey. We gather the finest essentials for the glass between you and the road, so that every drive begins in perfect clarity.';
-const GOLD_WORDS = new Set(['luxury', 'clarity.']);
-
-const STEP_CLASSES = [
-  'group-data-[step=0]/ritual:opacity-100 group-data-[step=0]/ritual:translate-y-0 group-data-[step=0]/ritual:blur-none',
-  'group-data-[step=1]/ritual:opacity-100 group-data-[step=1]/ritual:translate-y-0 group-data-[step=1]/ritual:blur-none',
-  'group-data-[step=2]/ritual:opacity-100 group-data-[step=2]/ritual:translate-y-0 group-data-[step=2]/ritual:blur-none',
-  'group-data-[step=3]/ritual:opacity-100 group-data-[step=3]/ritual:translate-y-0 group-data-[step=3]/ritual:blur-none',
-];
-const ART_CLASSES = [
-  'group-data-[step=0]/ritual:opacity-100 group-data-[step=0]/ritual:scale-100',
-  'group-data-[step=1]/ritual:opacity-100 group-data-[step=1]/ritual:scale-100',
-  'group-data-[step=2]/ritual:opacity-100 group-data-[step=2]/ritual:scale-100',
-  'group-data-[step=3]/ritual:opacity-100 group-data-[step=3]/ritual:scale-100',
-];
-const DOT_CLASSES = [
-  'group-data-[step=0]/ritual:bg-gold group-data-[step=0]/ritual:w-10',
-  'group-data-[step=1]/ritual:bg-gold group-data-[step=1]/ritual:w-10',
-  'group-data-[step=2]/ritual:bg-gold group-data-[step=2]/ritual:w-10',
-  'group-data-[step=3]/ritual:bg-gold group-data-[step=3]/ritual:w-10',
-];
-
-/* ─────────────── Sections ─────────────── */
 
 function Hero() {
   return (
-    <section aria-labelledby="hero-title" className="relative isolate flex min-h-[100svh] items-center overflow-hidden">
-      {/* Cinematic ground: midnight light, two slow beams, rain, vignette */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(90% 70% at 70% 35%, #18213a 0%, #0b1020 38%, #07080b 75%)' }} />
-        <div className="hero-fade absolute inset-0" style={{ '--d': '200ms' }}>
-          <div
-            className="absolute -top-1/4 left-[38%] h-[150%] w-[38vw] -rotate-[24deg] opacity-60 blur-2xl"
-            style={{ background: 'linear-gradient(180deg, #f1dfb81f, transparent 70%)', animation: 'drift 14s ease-in-out infinite' }}
-          />
-          <div
-            className="absolute -top-1/4 left-[62%] h-[150%] w-[14vw] -rotate-[24deg] opacity-50 blur-xl"
-            style={{ background: 'linear-gradient(180deg, #c9cdd41a, transparent 65%)', animation: 'drift 11s ease-in-out infinite reverse' }}
-          />
-        </div>
-        <div className="hero-fade absolute inset-0 opacity-80" style={{ '--d': '300ms' }}>
-          <RainCanvas />
-        </div>
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(120% 90% at 50% 40%, transparent 55%, #07080b 100%)' }} />
-        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-obsidian" />
-      </div>
-
-      <div className="container-page grid items-center gap-14 pb-28 pt-32 lg:grid-cols-[1.08fr_0.92fr] lg:gap-6 lg:pt-24">
-        <div className="relative z-10">
-          <p className="eyebrow hero-in max-sm:tracking-[0.24em]" style={{ '--d': '0ms' }}>Category 82 · Windshield Care &amp; Wiper Blades</p>
-          <h1 id="hero-title" className="display mt-8 text-[clamp(4.2rem,11.5vw,11rem)] text-ivory">
-            <span className="block overflow-hidden pb-[0.06em]">
-              <span className="hero-in block" style={{ '--d': '120ms' }}>Clarity,</span>
-            </span>
-            <span className="block overflow-hidden pb-[0.08em] pl-[0.55em]">
-              <span className="hero-in gold-text block italic" style={{ '--d': '260ms' }}>redefined.</span>
-            </span>
-          </h1>
-          <p className="hero-in mt-10 max-w-md text-[17px] leading-[1.75] text-mute" style={{ '--d': '420ms' }}>
-            The quiet art of the immaculate windshield. Blades, veils, tablets and cloths, chosen for the
-            glass between you and the road.
+    <section aria-labelledby="hero-title" className="relative isolate flex min-h-[100svh] items-end overflow-hidden bg-black">
+      <HeroWindshield />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, #050608cc 0%, transparent 22%, transparent 45%, #050608e6 88%, #050608 100%)' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 sm:hidden" style={{ background: 'linear-gradient(180deg, transparent 20%, #050608b3 45%, #050608d9 100%)' }} />
+      <div className="container-page relative z-10 pb-24 pt-40">
+        <p className="eyebrow hero-in max-sm:tracking-[0.2em]" style={{ '--d': '0ms' }}>Category 82 · Windshield care &amp; wiper blades</p>
+        <h1 id="hero-title" className="display mt-6 text-[clamp(4rem,11vw,11rem)]">
+          <span className="block overflow-hidden pb-[0.04em]"><span className="hero-in chrome-text block" style={{ '--d': '120ms' }}>Visibility,</span></span>
+          <span className="block overflow-hidden pb-[0.06em]"><span className="hero-in accent-text block" style={{ '--d': '240ms' }}>engineered.</span></span>
+        </h1>
+        <div className="mt-10 flex flex-wrap items-end justify-between gap-8">
+          <p className="hero-in max-w-md text-[17px] leading-[1.75] text-silver" style={{ '--d': '380ms' }}>
+            Precision wiper blades, rain repellent and glass care, plus the tools to see exactly what each one does for your view of the road.
           </p>
-          <div className="hero-in mt-12 flex flex-wrap items-center gap-5" style={{ '--d': '560ms' }}>
-            <Link href="/products" data-magnetic className="btn-primary h-14 px-9">
-              Enter the collection <span aria-hidden="true">→</span>
-            </Link>
-            <Link href="#ritual" data-magnetic className="btn-secondary h-14 px-8">
-              Discover the ritual
-            </Link>
-          </div>
-        </div>
-
-        <div className="hero-fade relative" style={{ '--d': '350ms' }}>
-          <div data-parallax="0.08">
-            <HeroGlass />
+          <div className="hero-in flex flex-wrap gap-4" style={{ '--d': '500ms' }}>
+            <Link href="/simulator" data-magnetic className="btn-primary h-14 px-9">Enter the simulator</Link>
+            <Link href="/fit" data-magnetic className="btn-secondary h-14 px-8">Find your blades</Link>
           </div>
         </div>
       </div>
-
-      {/* Scroll cue + quiet facts */}
-      <div className="hero-fade absolute inset-x-0 bottom-8" style={{ '--d': '900ms' }}>
-        <div className="container-page flex items-end justify-between text-[10px] uppercase tracking-[0.34em] text-dim">
-          <p className="hidden sm:block">Free delivery from ₹999 · Cash on delivery</p>
-          <a href="#manifesto" className="flex flex-col items-center gap-3 text-mute hover:text-gold-light">
-            Scroll
-            <span className="block h-12 w-px overflow-hidden bg-line">
-              <span className="block h-full w-full bg-gold" style={{ animation: 'scroll-cue 2.4s cubic-bezier(.65,0,.35,1) infinite' }} />
-            </span>
-          </a>
-          <p className="hidden sm:block">Est. 2026</p>
-        </div>
-      </div>
+      <a href="#statement" className="hero-fade hud absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 sm:flex flex-col items-center gap-3 hover:text-ice" style={{ '--d': '900ms' }}>
+        Scroll
+        <span className="block h-10 w-px overflow-hidden bg-line">
+          <span className="block h-full w-full bg-accent-light" style={{ animation: 'scroll-cue 2.4s cubic-bezier(.65,0,.35,1) infinite' }} />
+        </span>
+      </a>
     </section>
   );
 }
 
-function Manifesto() {
-  const words = MANIFESTO.split(' ');
+function Statement() {
+  const words = STATEMENT.split(' ');
   return (
-    <section id="manifesto" aria-label="Manifesto" className="relative py-40 sm:py-56">
+    <section id="statement" aria-label="Our approach" className="py-40 sm:py-56">
       <div className="container-page grid gap-12 lg:grid-cols-[220px_1fr]">
-        <p className="eyebrow pt-4" data-reveal>Manifesto</p>
+        <p className="eyebrow pt-4" data-reveal>Our approach</p>
         <div data-progress="through" style={{ '--p': 0 }}>
-          <p className="display text-[clamp(2.2rem,4.6vw,4.6rem)] leading-[1.12] text-ivory">
+          <p className="display text-[clamp(2.2rem,4.8vw,4.8rem)] leading-[1.08]">
             {words.map((w, i) => (
               <span
                 key={i}
-                className={GOLD_WORDS.has(w) ? 'gold-text italic' : undefined}
-                style={{
-                  opacity: `clamp(0.14, calc((var(--p) * 1.35 - ${(i / words.length).toFixed(3)}) * 9), 1)`,
-                  transition: 'opacity 0.2s linear',
-                }}
+                className={LIT.has(w) ? 'accent-text' : 'text-frost'}
+                style={{ opacity: `clamp(0.12, calc((var(--p) * 1.35 - ${(i / words.length).toFixed(3)}) * 9), 1)`, transition: 'opacity 0.2s linear' }}
               >
                 {w}{' '}
               </span>
             ))}
           </p>
-          <div className="mt-16 flex items-center gap-6" data-reveal>
-            <span className="h-px w-16 bg-gold/60" />
-            <span className="text-[11px] uppercase tracking-[0.34em] text-dim">The house of AutoCare</span>
-          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function Marquee() {
-  const items = ['Wiper Blades', 'Rain Repellent', 'Washer Fluid', 'Microfiber', 'Clarity'];
-  const row = [...items, ...items, ...items, ...items];
-  return (
-    <div aria-hidden="true" className="relative overflow-hidden border-y border-line py-8">
-      <div className="flex w-max items-center gap-14 whitespace-nowrap" style={{ animation: 'marquee 48s linear infinite' }}>
-        {row.map((t, i) => (
-          <span key={i} className="flex items-center gap-14">
-            <span className={`display text-5xl italic sm:text-6xl ${i % 5 === 4 ? 'gold-text' : 'text-ivory/80'}`}>{t}</span>
-            <span className="text-gold/60">✦</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-async function Collection() {
+async function Anatomy() {
   const { products } = await serverApi('/products?limit=100');
-  const lines = LINES.map((l) => {
-    const ps = products.filter((p) => p.type === l.type);
-    const prices = ps.map((p) => p.price);
-    return {
-      ...l,
-      count: ps.length,
-      range: prices.length ? `${formatPrice(Math.min(...prices))} — ${formatPrice(Math.max(...prices))}` : 'Coming soon',
-    };
-  });
-  return <CollectionList lines={lines} />;
+  const byType = (t) => products.filter((p) => p.type === t);
+  const blades = byType('Wiper Blades').filter((p) => p.bladeLengthsIn?.length === 2);
+  const allSizes = blades.flatMap((p) => p.bladeLengthsIn);
+  const largest = [...blades].sort((a, b) => Math.max(...b.bladeLengthsIn) - Math.max(...a.bladeLengthsIn))[0];
+  const featuresOf = (t) => (byType(t)[0]?.features || []).slice(0, 3);
+  const chapters = [
+    {
+      verb: 'Sweep', line: 'Wiper blades', type: 'Wiper Blades', lengths: largest?.bladeLengthsIn || [], href: '/products?q=Wiper%20Blades',
+      text: 'Frameless beam blades follow the curve of the glass, pressing evenly along their length for one clean, quiet arc.',
+      facts: allSizes.length ? [`Pairs from ${Math.min(...allSizes)}″ to ${Math.max(...allSizes)}″`, ...featuresOf('Wiper Blades').slice(0, 2)] : featuresOf('Wiper Blades'),
+    },
+    { verb: 'Repel', line: 'Rain repellent', type: 'Rain Repellent', href: '/products?q=Rain%20Repellent', text: 'A hydrophobic coat. At speed, rain gathers into beads and simply leaves, so the wipers barely need to move.', facts: featuresOf('Rain Repellent') },
+    { verb: 'Cleanse', line: 'Washer fluid', type: 'Washer Fluid', href: '/products?q=Washer%20Fluid', text: 'Concentrated effervescent tablets dissolve into streak-free washer fluid. No bulky bottles.', facts: featuresOf('Washer Fluid') },
+    { verb: 'Finish', line: 'Microfiber care', type: 'Microfiber Towel', href: '/products?q=Microfiber%20Towel', text: 'Waffle-weave microfiber lifts the last drop and leaves the glass spotless, inside and out.', facts: featuresOf('Microfiber Towel') },
+  ];
+  return <StoryChapters chapters={chapters} />;
 }
 
-function CollectionSection() {
+function SimulatorSection() {
   return (
-    <section aria-labelledby="collection-title" className="relative py-36">
+    <section aria-labelledby="sim-title" className="py-36">
       <div className="container-page">
-        <div className="mb-20 flex flex-wrap items-end justify-between gap-8">
+        <div className="mb-14 flex flex-wrap items-end justify-between gap-8">
           <div>
-            <p className="eyebrow" data-reveal>The collection</p>
-            <h2 id="collection-title" className="display mt-6 text-[clamp(3rem,7vw,7rem)] text-ivory" data-reveal="line">
-              <span>Four <em className="gold-text">essentials.</em></span>
+            <p className="eyebrow" data-reveal>Weather simulator</p>
+            <h2 id="sim-title" className="display mt-6 text-[clamp(3rem,7vw,7rem)]" data-reveal="line">
+              <span><span className="chrome-text">Test the</span> <span className="accent-text">weather.</span></span>
             </h2>
           </div>
-          <Link href="/products" className="link-lux" data-reveal>View every piece →</Link>
+          <p className="max-w-sm text-[15px] leading-[1.8] text-mute" data-reveal>
+            Turn up the rain, switch off the wipers, wear out the blades. Then see what a fresh blade and a repellent coat change.
+          </p>
         </div>
-        <Suspense fallback={<div className="h-[520px] animate-pulse rounded-2xl border border-line" />}>
-          <Collection />
-        </Suspense>
+        <div data-reveal>
+          <WeatherSimulator compact />
+        </div>
+        <Link href="/simulator" className="link-tech mt-8">Open the full simulator →</Link>
       </div>
     </section>
   );
 }
 
-function Ritual() {
+function FitSection() {
   return (
-    <section
-      id="ritual"
-      aria-labelledby="ritual-title"
-      data-progress="sticky"
-      data-steps="4"
-      data-step="0"
-      className="group/ritual relative h-[420vh]"
-      style={{ '--p': 0 }}
-    >
-      <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
-        <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(70% 60% at 75% 50%, #141b30 0%, #07080b 70%)' }} />
-        <div className="container-page grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <p className="eyebrow">The ritual</p>
-            <h2 id="ritual-title" className="sr-only">The ritual: cleanse, repel, sweep, dry</h2>
-            <div className="relative mt-8 h-[300px] sm:h-[340px]">
-              {RITUAL.map((r, i) => (
-                <div
-                  key={r.verb}
-                  className={`absolute inset-0 translate-y-6 opacity-0 blur-sm transition-all duration-1000 ease-[cubic-bezier(.22,1,.36,1)] ${STEP_CLASSES[i]}`}
-                >
-                  <p className="text-[11px] uppercase tracking-[0.34em] text-dim">Chapter 0{i + 1} / 04</p>
-                  <h3 className="display mt-4 text-[clamp(4rem,10vw,9rem)] italic text-ivory">{r.verb}</h3>
-                  <p className="mt-6 max-w-md text-[16px] leading-[1.8] text-mute">{r.text}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-10 flex items-center gap-3" aria-hidden="true">
-              {RITUAL.map((r, i) => (
-                <span key={r.verb} className={`h-px w-5 bg-line-strong transition-all duration-700 ${DOT_CLASSES[i]}`} />
-              ))}
-            </div>
-          </div>
-
-          <div className="relative mx-auto aspect-square w-full max-w-[520px]">
-            <div aria-hidden="true" className="absolute inset-0 rounded-full border border-line" />
-            <div aria-hidden="true" className="absolute inset-[6%] rounded-full border border-gold/20" />
-            <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
-              <circle cx="50" cy="50" r="49.6" fill="none" stroke="#d4b27a" strokeWidth="0.4" pathLength="1" strokeDasharray="1" style={{ strokeDashoffset: 'calc(1 - var(--p))' }} />
-            </svg>
-            {RITUAL.map((r, i) => (
-              <div
-                key={r.verb}
-                className={`absolute inset-[12%] scale-90 overflow-hidden rounded-full opacity-0 transition-all duration-1000 ease-[cubic-bezier(.22,1,.36,1)] ${ART_CLASSES[i]}`}
-              >
-                <ProductArt product={{ type: r.type, name: r.verb }} />
-              </div>
+    <section aria-labelledby="fit-title" className="relative overflow-hidden border-y border-line py-36">
+      <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(50% 70% at 85% 50%, #2f8cff17, transparent 70%)' }} />
+      <div className="container-page grid items-center gap-16 lg:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <p className="eyebrow" data-reveal>Compatibility finder</p>
+          <h2 id="fit-title" className="display mt-6 text-[clamp(3rem,6.5vw,6.5rem)]" data-reveal="line">
+            <span><span className="chrome-text">Exactly your</span> <span className="accent-text">fit.</span></span>
+          </h2>
+          <p className="mt-8 max-w-lg text-[16px] leading-[1.8] text-mute" data-reveal>
+            Search by vehicle, where each record is verified against a cited source, or enter the lengths of your current blades. We only recommend pairs whose recorded sizes match, and we tell you why.
+          </p>
+          <ul className="mt-10 grid max-w-lg gap-3 sm:grid-cols-3" data-reveal>
+            {['Verified sources', 'Exact & close matches', 'Connector check'].map((t) => (
+              <li key={t} className="rounded-2xl border border-line px-4 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-silver">{t}</li>
             ))}
-          </div>
+          </ul>
+        </div>
+        <div data-reveal style={{ '--delay': '150ms' }}>
+          <FitTeaser />
         </div>
       </div>
     </section>
   );
 }
 
-async function SignatureProduct() {
-  let product = null;
-  try {
-    ({ product } = await serverApi('/products/universal-hook-type-wiper-blade-pair-20-26'));
-  } catch {
-    const { products } = await serverApi('/products?q=Wiper%20Blades&sort=price_desc&limit=1');
-    product = products[0];
-  }
-  if (!product) return null;
-
+async function Lines() {
+  const { products } = await serverApi('/products?limit=100');
   return (
-    <div className="grid items-center gap-16 lg:grid-cols-[1.05fr_0.95fr]">
-      <div data-reveal="mask" className="relative">
-        <div data-tilt="7" className="group relative [perspective:1200px]" style={{ '--rx': '0deg', '--ry': '0deg', '--mx': '50%', '--my': '50%' }}>
-          <div
-            className="relative aspect-[4/3.4] overflow-hidden rounded-[28px] border border-line transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
-            style={{ transform: 'rotateX(var(--rx)) rotateY(var(--ry))' }}
+    <div className="grid gap-px overflow-hidden rounded-[28px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      {LINES.map((l, i) => {
+        const ps = products.filter((p) => p.type === l.type);
+        const prices = ps.map((p) => p.price);
+        return (
+          <Link
+            key={l.type}
+            href={`/products?q=${encodeURIComponent(l.type)}`}
+            data-cursor="View"
+            data-reveal
+            style={{ '--delay': `${i * 100}ms` }}
+            className="group relative flex flex-col bg-obsidian p-6 transition-colors duration-500 hover:bg-carbon"
           >
-            <ProductArt product={product} />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-              style={{ background: 'radial-gradient(400px circle at var(--mx) var(--my), #f1dfb826, transparent 60%)' }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <p className="eyebrow" data-reveal>Signature piece</p>
-        <h2 id="signature-title" className="display mt-6 text-[clamp(2.8rem,5vw,5rem)] text-ivory" data-reveal style={{ '--delay': '100ms' }}>
-          {product.name.replace('Universal ', '')}
-        </h2>
-        <p className="mt-8 max-w-lg text-[16px] leading-[1.8] text-mute" data-reveal style={{ '--delay': '200ms' }}>
-          {product.description}
-        </p>
-        <dl className="mt-10 border-t border-line" data-reveal style={{ '--delay': '300ms' }}>
-          {product.features?.map((f, i) => (
-            <div key={f} className="flex items-baseline justify-between gap-6 border-b border-line py-4">
-              <dt className="text-[11px] uppercase tracking-[0.3em] text-dim">0{i + 1}</dt>
-              <dd className="text-right text-[15px] text-ivory">{f}</dd>
+            <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-line">
+              <div className="h-full w-full transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105">
+                <ProductArt product={{ type: l.type, name: l.title }} />
+              </div>
             </div>
-          ))}
-        </dl>
-        <div className="mt-10 flex flex-wrap items-center gap-8" data-reveal style={{ '--delay': '400ms' }}>
-          <Price value={product.price} className="text-6xl text-gold-light" />
-          {product.stock > 0 ? <AddToCartButton product={product} /> : <p className="text-sm text-rose-300">Currently unavailable</p>}
-        </div>
-        <Link href={`/products/${product.slug}`} className="link-lux mt-8" data-reveal style={{ '--delay': '500ms' }}>
-          The full details →
-        </Link>
-      </div>
+            <p className="hud mt-6">0{i + 1} · {ps.length} products</p>
+            <h3 className="mt-3 text-[24px] font-normal tracking-[-0.02em] text-frost">{l.title}</h3>
+            <p className="mt-2 text-[14px] leading-relaxed text-mute">{l.text}</p>
+            <p className="mt-6 font-mono text-[12px] text-ice">{prices.length ? `${formatPrice(Math.min(...prices))} – ${formatPrice(Math.max(...prices))}` : 'Coming soon'}</p>
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
-function Signature() {
+function LinesSection() {
   return (
-    <section id="signature" aria-labelledby="signature-title" className="relative py-36 sm:py-48">
-      <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(50% 50% at 25% 50%, #d4b27a14, transparent 70%)' }} />
+    <section aria-labelledby="lines-title" className="py-36">
       <div className="container-page">
-        <Suspense fallback={<div className="h-[560px] animate-pulse rounded-[28px] border border-line" />}>
-          <SignatureProduct />
+        <div className="mb-14 flex flex-wrap items-end justify-between gap-8">
+          <div>
+            <p className="eyebrow" data-reveal>The range</p>
+            <h2 id="lines-title" className="display mt-6 text-[clamp(3rem,7vw,7rem)]" data-reveal="line">
+              <span><span className="chrome-text">Four systems.</span> <span className="accent-text">One view.</span></span>
+            </h2>
+          </div>
+          <Link href="/products" className="link-tech" data-reveal>All products →</Link>
+        </div>
+        <Suspense fallback={<div className="h-[440px] animate-pulse rounded-[28px] border border-line" />}>
+          <Lines />
         </Suspense>
       </div>
     </section>
   );
 }
 
-function Assurances() {
-  const items = [
-    ['4 L', 'of streak-free fluid from a single tablet'],
-    ['3 mo', 'of rain repellency from one application'],
-    ['16–26″', 'blade pairs for hatchbacks to SUVs'],
-    ['₹999', 'and above, delivered free of charge'],
-  ];
+function AssistantSection() {
   return (
-    <section aria-label="Assurances" className="border-y border-line">
-      <div className="container-page grid sm:grid-cols-2 lg:grid-cols-4">
-        {items.map(([n, t], i) => (
-          <div
-            key={n}
-            data-reveal
-            style={{ '--delay': `${i * 120}ms` }}
-            className={`py-14 sm:px-8 ${i > 0 ? 'border-t border-line sm:border-t-0' : ''} ${i % 2 === 1 ? 'sm:border-l sm:border-line' : ''} ${i >= 2 ? 'sm:border-t lg:border-t-0' : ''} ${i > 0 ? 'lg:border-l lg:border-line' : ''}`}
-          >
-            <p className="display gold-text text-6xl">{n}</p>
-            <p className="mt-4 max-w-[220px] text-[14px] leading-relaxed text-mute">{t}</p>
+    <section aria-labelledby="assist-title" className="pb-12 pt-20">
+      <div className="container-page">
+        <div className="glass relative overflow-hidden rounded-[32px] p-8 sm:p-14">
+          <div aria-hidden="true" className="absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ background: '#2f8cff33' }} />
+          <p className="eyebrow" data-reveal>Care assistant</p>
+          <h2 id="assist-title" className="display mt-6 max-w-3xl text-[clamp(2.6rem,5.5vw,5.5rem)]" data-reveal="line">
+            <span><span className="chrome-text">Ask anything about</span> <span className="accent-text">your glass.</span></span>
+          </h2>
+          <p className="mt-6 max-w-xl text-[16px] leading-[1.8] text-mute" data-reveal>
+            Streaks, chatter, fogging, washer trouble or which product to choose. The assistant troubleshoots step by step and only recommends products we actually stock.
+          </p>
+          <div className="mt-10" data-reveal>
+            <AssistantPrompts prompts={['My wipers leave streaks', 'Wipers chatter on the glass', 'When should I replace blades?', 'Prepare for the monsoon']} />
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );
@@ -361,12 +225,14 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <Manifesto />
-      <Marquee />
-      <CollectionSection />
-      <Ritual />
-      <Signature />
-      <Assurances />
+      <Statement />
+      <Suspense fallback={<div className="h-[100svh]" />}>
+        <Anatomy />
+      </Suspense>
+      <SimulatorSection />
+      <FitSection />
+      <LinesSection />
+      <AssistantSection />
     </>
   );
 }

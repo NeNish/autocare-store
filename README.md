@@ -20,11 +20,18 @@ Built on the team's standard stack:
 - Checkout with address validation (cash on delivery); free shipping from ₹999
 - Order history, order details, and cancelling an order while it is still pending
 - Responsive layout with a mobile menu
+- **Weather simulator** (`/simulator`): a real-time windshield with rain, fog, day/dusk/night light, wiper speeds, worn blades and rain repellent, plus a live clarity reading
+- **Compatibility finder** (`/fit`): match by verified vehicle record (make → model → year) or by measuring your current blades; results show exact and close (within 1″) matches and check the arm connector
+- **Compare** up to three products side by side (`/compare`)
+- **Interactive 3D product views** (three.js) on product pages and in the homepage chapters
+- **Windshield care assistant**: troubleshooting, maintenance and product suggestions grounded in the live catalogue; uses Claude when `ANTHROPIC_API_KEY` is set and a built-in care guide otherwise
 
 **Admins** (`/admin`)
 - Orders: list, filter by status, update status, and see revenue and open-order stats
 - Products: create, edit, hide from the store, delete, and see low-stock highlighting
 - Categories: create, edit, and delete (blocked while a category still has products)
+- Vehicle fitments: add, edit and delete vehicle wiper-size records; every record requires a verification source
+- Products: blade lengths (inches) and arm connectors for wiper blades, used by the compatibility finder
 
 **Security and correctness**
 - Passwords hashed with bcrypt (12 rounds); new accounts are always `customer`, so a user can't sign up as admin
@@ -38,14 +45,20 @@ Built on the team's standard stack:
 
 ## Design
 
-The storefront is art-directed as a luxury house: obsidian and midnight grounds, champagne gold and silver accents, Cormorant Garamond display serif over Geist sans.
+The storefront is designed as the cockpit of a next-generation vehicle: obsidian black, metallic silver, electric blue and icy white, set in Geist and Geist Mono.
 
-- **Opening sequence:** a gold ring draws, a wiper light sweeps, then the curtain lifts. It plays once per browser session, can be skipped with a click or Escape, and is pure CSS so it always completes.
-- **Homepage chapters:** a full-screen hero with canvas rain and a 3D glass windshield that tilts with the mouse (the wiper sweeps the drops away), a manifesto that lights up word by word as you scroll, a collection index whose artwork follows the cursor, a pinned four-chapter "Ritual" driven by scroll, the signature piece, and a cinematic footer.
-- **Interaction:** magnetic buttons, a custom champagne cursor (desktop only), 3D tilt on product art, parallax depth, scroll reveals and soft page transitions.
-- **Motion engine:** one small runtime (`client/src/components/lux/MotionRuntime.js`) drives every effect through data attributes (`data-reveal`, `data-magnetic`, `data-tilt`, `data-parallax`, `data-progress`), so pages stay server-rendered. No animation library is used.
-- **Accessibility:** visitors who prefer reduced motion get no opening sequence, cursor, parallax or hidden-until-scrolled content. Focus outlines are visible, decorative layers are hidden from screen readers, and text meets contrast guidelines on the dark grounds.
-- **Product art:** fine-line gold illustrations per product line (`ProductArt.js`). Add an image URL to a product in Admin to show a photograph instead.
+- **Opening sequence:** a short "system check" (rain sensor, wiper system, glass surface, washer circuit). It plays once per browser session and is pure CSS.
+- **Windshield engine** (`client/src/lib/windshield-sim.js`): a canvas simulation of rain on glass with a water film, refracting droplets, wiper sweeps that clear the glass, streaks from worn blades, beading and run-off with repellent, and fog. It pauses when off screen and renders a still frame for reduced motion. The hero and the simulator both use it.
+- **Homepage story:** full-screen windshield hero with a live HUD, a statement that lights up as you scroll, a pinned four-chapter "Anatomy of clarity" with 3D models, the simulator, the fit finder, the product range and the assistant.
+- **Motion runtime** (`client/src/components/lux/MotionRuntime.js`) drives reveals, magnetic buttons, tilt, parallax and scroll progress through data attributes, so pages stay server-rendered.
+- **Accessibility:** reduced-motion support throughout, keyboard-operable controls, visible focus, labelled 3D views and live regions for results.
+
+### No invented data
+
+- No vehicle fitment data ships with the app. The vehicle search only lists records an admin has added with a cited source; until then it points customers to measuring their blades.
+- Matching uses only the blade lengths and connectors recorded on each product.
+- Spec tables and comparisons show only stored product data. 3D models and the simulator's clarity reading are labelled illustrative.
+- The assistant answers from the catalogue and general care guidance and never claims a part fits a specific vehicle.
 
 ## Project structure
 
@@ -131,6 +144,13 @@ All responses are JSON. Errors look like `{ "success": false, "message": "...", 
 | POST   | `/api/orders/:id/cancel`    | Owner    | Pending orders only; restocks items                                     |
 | GET    | `/api/orders`               | Admin    |                                                                         |
 | PATCH  | `/api/orders/:id/status`    | Admin    | `{ status }`; setting `cancelled` restocks items                        |
+| GET    | `/api/fitments/makes`       | Public   | Makes with verified records                                             |
+| GET    | `/api/fitments/models`      | Public   | `make`                                                                  |
+| GET    | `/api/fitments/years`       | Public   | `make, model`                                                           |
+| GET    | `/api/fitments/lookup`      | Public   | `make, model, year`; returns the record(s) and matching blade pairs     |
+| GET    | `/api/fitments/match`       | Public   | `driver, passenger` (inches), `connector?`                              |
+| GET/POST/PUT/DELETE | `/api/fitments[/:id]` | Admin | Manage records; `source` is required                               |
+| POST   | `/api/assistant`            | Public   | `{ messages: [{ role, content }] }`, rate limited (12/min)              |
 
 `sort` accepts `newest`, `price_asc`, `price_desc`, or `name`. Prices are in INR.
 
@@ -148,11 +168,12 @@ The repo deploys as **two Vercel projects** from the same GitHub repo: one for t
    - `JWT_SECRET`: a long random string
    - `NODE_ENV`: `production`
    - `CLIENT_URL`: the website URL from step 3 (fill in afterwards)
+   - `ANTHROPIC_API_KEY` (optional): turns on Claude for the care assistant; `ASSISTANT_MODEL` defaults to `claude-haiku-5-5`
 
    Deploy, then check `https://<api-project>.vercel.app/api/health`.
 3. **Website project:** import the same repo again, set **Root Directory = `client`** (framework: Next.js), and add `API_URL` = the API URL from step 2, with no trailing slash. Deploy.
 4. Put the website URL into the API project's `CLIENT_URL` and redeploy the API.
-5. **Seed the live database once** from your computer: set `MONGODB_URI`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`, then run `npm run seed`.
+5. **Seed the live database once** from your computer: set `MONGODB_URI`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`, then run `npm run seed`. Running it again later updates the catalogue products (including blade sizes for the fit finder) without touching users or orders; note that it also resets their prices and stock to the seed values.
 
 How it runs on Vercel: Vercel's zero-config Express support uses `server/src/app.js`, which exports the app. The app connects to MongoDB on the first request and reuses the connection while the instance stays warm. If `MONGODB_URI` or `JWT_SECRET` is missing, every `/api` call returns a JSON error naming the missing variable instead of crashing.
 

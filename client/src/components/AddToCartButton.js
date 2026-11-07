@@ -27,7 +27,7 @@ export default function AddToCartButton({ product, compact = false }) {
         onClick={handleAdd}
         disabled={maxMore < 1}
         aria-label={`Add ${product.name} to bag`}
-        className="link-lux disabled:opacity-40"
+        className="link-tech disabled:opacity-40"
       >
         <span aria-live="polite">{added ? 'Added ✓' : maxMore < 1 ? 'In bag' : 'Add to bag'}</span>
       </button>
@@ -43,11 +43,11 @@ export default function AddToCartButton({ product, compact = false }) {
           onClick={() => setQty((q) => Math.max(1, q - 1))}
           disabled={qty <= 1 || maxMore < 1}
           aria-label="Decrease quantity"
-          className="grid h-14 w-12 place-items-center text-lg text-mute transition-colors hover:text-gold-light disabled:opacity-30"
+          className="grid h-14 w-12 place-items-center text-lg text-mute transition-colors hover:text-accent-light disabled:opacity-30"
         >
           −
         </button>
-        <span className="w-8 text-center text-[15px] tabular-nums text-ivory" aria-live="polite" aria-label={`Quantity ${qty}`}>
+        <span className="w-8 text-center text-[15px] tabular-nums text-frost" aria-live="polite" aria-label={`Quantity ${qty}`}>
           {qty}
         </span>
         <button
@@ -55,7 +55,7 @@ export default function AddToCartButton({ product, compact = false }) {
           onClick={() => setQty((q) => Math.min(max, q + 1))}
           disabled={qty >= max || maxMore < 1}
           aria-label="Increase quantity"
-          className="grid h-14 w-12 place-items-center text-lg text-mute transition-colors hover:text-gold-light disabled:opacity-30"
+          className="grid h-14 w-12 place-items-center text-lg text-mute transition-colors hover:text-accent-light disabled:opacity-30"
         >
           +
         </button>
