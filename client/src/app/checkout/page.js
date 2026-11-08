@@ -40,7 +40,7 @@ function CheckoutForm() {
   const method = chosenMethod || (settingsForDefault.paymentsEnabled ? 'online' : 'cod');
   const { quote, loading, settings } = useQuote(items, code, method);
   const onlineOk = settings.paymentsEnabled;
-  const codOk = settings.codEnabled && quote.cod?.available !== false;
+  const codOk = settings.codEnabled !== false && quote.cod?.available !== false;
   const methodOk = method === 'online' ? onlineOk : codOk;
   const [remind, setRemind] = useState(true);
   const [stage, setStage] = useState('');
@@ -166,7 +166,7 @@ function CheckoutForm() {
                 : 'Online payments are being set up and will be available shortly.'
             }
           />
-          {settings.codEnabled && (
+          {settings.codEnabled !== false && (
             <PayOption
               id="pay-cod"
               checked={method === 'cod'}

@@ -15,8 +15,11 @@ const settingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Returns the settings as a plain object. Not lean, so defaults fill in any fields added
+// after the record was first created (e.g. cash-on-delivery options).
 settingsSchema.statics.get = async function get() {
-  return this.findOneAndUpdate({ key: 'store' }, { $setOnInsert: { key: 'store' } }, { upsert: true, new: true }).lean();
+  const doc = await this.findOneAndUpdate({ key: 'store' }, { $setOnInsert: { key: 'store' } }, { upsert: true, new: true });
+  return doc.toObject();
 };
 
 module.exports = mongoose.model('Settings', settingsSchema);

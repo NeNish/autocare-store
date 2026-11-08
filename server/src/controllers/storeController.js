@@ -38,7 +38,8 @@ exports.getSettings = async (_req, res) => {
 
 exports.updateSettings = async (req, res) => {
   const data = matchedData(req, { locations: ['body'] });
-  const settings = await Settings.findOneAndUpdate({ key: 'store' }, data, { upsert: true, new: true, runValidators: true }).lean();
+  await Settings.findOneAndUpdate({ key: 'store' }, data, { upsert: true, new: true, runValidators: true });
+  const settings = await Settings.get();
   res.json({ success: true, settings });
 };
 
