@@ -11,7 +11,7 @@ import useHydrated from '@/lib/useHydrated';
 import { useAuth } from '@/context/AuthContext';
 import { clientApi, errorMessage } from '@/lib/api';
 import { formatPrice } from '@/lib/format';
-import { setCouponCode, useCouponCode, useQuote } from '@/lib/store';
+import { setCouponCode, useCouponCode, useQuote, useStoreSettings } from '@/lib/store';
 import { openCheckout } from '@/lib/razorpay';
 
 const fields = [
@@ -34,7 +34,14 @@ function validate(a) {
 function CheckoutForm() {
   const { items, clear, ready } = useCart();
   const code = useCouponCode();
-  const { quote, loading, settings } = useQuote(items, code);
+  const [chosenMethod, setMethod] = useState('');
+  const settingsForDefault = useStoreSettings();
+  // Online is the default when it is set up; otherwise cash on delivery if offered
+  const method = chosenMethod || (settingsForDefault.paymentsEnabled ? 'online' : 'cod');
+  const { quote, loading, settings } = useQuote(items, code, method);
+  const onlineOk = settings.paymentsEnabled;
+  const codOk = settings.codEnabled && quote.cod?.available !== false;
+  const methodOk = method === 'online' ? onlineOk : codOk;
   const [remind, setRemind] = useState(true);
   const [stage, setStage] = useState('');
   const hydrated = useHydrated();
@@ -80,6 +87,7 @@ function CheckoutForm() {
           shippingAddress: Object.fromEntries(Object.entries(address).map(([k, val]) => [k, val.trim()])),
           couponCode: code || undefined,
           reminderOptIn: hasBlades && settings.remindersEnabled && remind,
+          paymentMethod: method,
         },
       }));
     } catch (err) {
@@ -92,6 +100,10 @@ function CheckoutForm() {
     // The order now holds the stock; the bag is no longer needed
     clear();
     setCouponCode('');
+    if (method === 'cod') {
+      router.push(`/account/orders/${order._id}?placed=1`);
+      return;
+    }
     setStage('Waiting for payment…');
     try {
       const response = await openCheckout(checkout);
@@ -139,20 +151,37 @@ function CheckoutForm() {
           <h2 className="display text-4xl text-frost">Payment</h2>
         </div>
         <div className="hairline mt-8" />
-        <div className="card mt-8 flex items-center gap-5 p-6">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-accent/60 text-accent">₹</span>
-          <div>
-            <p className="text-[15px] text-frost">Pay securely with Razorpay</p>
-            <p className="mt-1 text-[13px] text-dim">
-              UPI, cards, net banking and wallets. Your items are held for you while you pay; we never see your card details.
-            </p>
-          </div>
-        </div>
-        {!settings.paymentsEnabled && (
-          <p role="status" className="mt-4 rounded-2xl border border-amber-200/30 bg-amber-500/10 p-4 text-[13px] text-amber-100">
-            Online payments are being set up. You can review your order, but checkout opens shortly.
-          </p>
-        )}
+        <fieldset className="mt-8 space-y-3">
+          <legend className="sr-only">Payment method</legend>
+          <PayOption
+            id="pay-online"
+            checked={method === 'online'}
+            disabled={!onlineOk}
+            onChange={() => setMethod('online')}
+            title="Pay online"
+            badges={['UPI', 'Cards', 'Net banking', 'Wallets', 'EMI', 'Pay Later']}
+            note={
+              onlineOk
+                ? 'Secure checkout by Razorpay: Google Pay, PhonePe, Paytm or any UPI app, Visa, Mastercard and RuPay cards, all major banks, wallets, EMI and Pay Later. We never see your card details.'
+                : 'Online payments are being set up and will be available shortly.'
+            }
+          />
+          {settings.codEnabled && (
+            <PayOption
+              id="pay-cod"
+              checked={method === 'cod'}
+              disabled={!codOk}
+              onChange={() => setMethod('cod')}
+              title="Cash on delivery"
+              badges={['Cash', 'UPI at door']}
+              note={
+                !codOk
+                  ? quote.cod?.reason
+                  : `Pay the delivery partner when your order arrives.${settings.codFee > 0 ? ` A ${formatPrice(settings.codFee)} cash-handling fee applies.` : ''}`
+              }
+            />
+          )}
+        </fieldset>
         {hasBlades && settings.remindersEnabled && (
           <label className="mt-6 flex cursor-pointer items-start gap-4 rounded-2xl border border-line p-5">
             <input
@@ -178,15 +207,37 @@ function CheckoutForm() {
             </li>
           ))}
         </ul>
-        <button type="submit" data-magnetic="0.2" className="btn-primary h-14 w-full" disabled={busy || loading || !settings.paymentsEnabled}>
-          {busy ? stage : `Pay ${formatPrice(quote.total)}`}
+        <button type="submit" data-magnetic="0.2" className="btn-primary h-14 w-full" disabled={busy || loading || !methodOk}>
+          {busy ? stage : method === 'cod' ? `Place order · ${formatPrice(quote.total)}` : `Pay ${formatPrice(quote.total)}`}
         </button>
         <p className="text-center text-[11px] text-dim">
-          By paying you agree to our <Link href="/policies/terms" className="link-tech">terms</Link> and{' '}
+          By placing your order you agree to our <Link href="/policies/terms" className="link-tech">terms</Link> and{' '}
           <Link href="/policies/refunds" className="link-tech">refund policy</Link>.
         </p>
       </OrderSummary>
     </form>
+  );
+}
+
+function PayOption({ id, checked, disabled, onChange, title, badges, note }) {
+  return (
+    <label
+      htmlFor={id}
+      className={`flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-colors ${
+        checked ? 'border-accent/70 bg-accent/[0.07]' : 'border-line hover:border-silver/30'
+      } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+    >
+      <input id={id} type="radio" name="payment" className="mt-1 h-4 w-4 accent-[#2f8cff]" checked={checked} disabled={disabled} onChange={onChange} />
+      <span className="min-w-0">
+        <span className="block text-[15px] text-frost">{title}</span>
+        <span className="mt-2 flex flex-wrap gap-1.5">
+          {badges.map((b) => (
+            <span key={b} className="rounded-full border border-line px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-silver">{b}</span>
+          ))}
+        </span>
+        {note && <span className="mt-2 block text-[13px] leading-relaxed text-dim">{note}</span>}
+      </span>
+    </label>
   );
 }
 

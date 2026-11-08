@@ -64,6 +64,7 @@ const cartItems = [
   body('items.*.product').isMongoId().withMessage('Invalid product id'),
   body('items.*.quantity').isInt({ min: 1, max: 99 }).withMessage('Quantity must be 1-99').toInt(),
   body('couponCode').optional({ values: 'falsy' }).trim().isLength({ max: 30 }).withMessage('Invalid code'),
+  body('paymentMethod').optional().isIn(['online', 'cod']).withMessage('Choose a payment method'),
 ];
 const quote = cartItems;
 const createOrder = [
@@ -86,6 +87,9 @@ const verifyPayment = [
 const settings = [
   body('shippingFee').optional().isFloat({ min: 0, max: 10000 }).withMessage('Shipping fee must be 0–10000').toFloat(),
   body('freeShippingFrom').optional().isFloat({ min: 0, max: 1000000 }).withMessage('Free-shipping amount must be 0 or more').toFloat(),
+  body('codEnabled').optional().isBoolean().toBoolean(),
+  body('codFee').optional().isFloat({ min: 0, max: 1000 }).withMessage('COD fee must be 0–1000').toFloat(),
+  body('codMaxOrder').optional().isFloat({ min: 0, max: 1000000 }).withMessage('COD limit must be 0 or more').toFloat(),
   body('remindersEnabled').optional().isBoolean().toBoolean(),
   body('reminderMonths').optional().isInt({ min: 1, max: 24 }).withMessage('Reminder months must be 1–24').toInt(),
 ];

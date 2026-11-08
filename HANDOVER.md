@@ -17,7 +17,9 @@ This guide is for the business that will run the store. It covers the accounts t
 | Code | GitHub | `NeNish/autocare-store` |
 
 ### Ways the store makes money
-- **Product sales** paid online through Razorpay (UPI, cards, net banking, wallets).
+- **Product sales**, paid in either of two ways:
+  - **Online through Razorpay**: UPI (Google Pay, PhonePe, Paytm, any UPI app), debit and credit cards, net banking, wallets, EMI and Pay Later. UPI is shown first. EMI, Pay Later and international cards appear once they are enabled in the Razorpay dashboard (Account & Settings → Payment methods).
+  - **Cash on delivery**, with an optional COD fee and a maximum order value, set in Admin → Store settings. COD orders are confirmed straight away. They are marked **collected** automatically when you set the order to Delivered, and revenue counts them from then on.
 - **Care kits**: bundles priced below the parts bought separately. The kit page shows the saving, worked out from today's prices. One example kit (Monsoon Clear-View Kit, ₹899) is created by the seed; change its price or hide it in Admin → Products.
 - **Promo codes**: percentage or fixed amount, with a minimum order, a cap, dates, a usage limit and once-per-customer.
 - **Delivery fee with a free-delivery threshold** (default ₹79, free from ₹999), editable in Admin → Store settings. This nudges larger baskets.
@@ -33,7 +35,9 @@ This guide is for the business that will run the store. It covers the accounts t
    - **Network Access must include `0.0.0.0/0`.** Vercel servers have no fixed IP address, and the site cannot load products without this.
    - If the free cluster is **Paused**, click **Resume**.
 4. **Razorpay** must be the business's own account, because payouts go to its bank account. See section 4.
-5. Change the admin password: create a fresh admin with `ADMIN_EMAIL` / `ADMIN_PASSWORD` and `npm run seed`, then sign in.
+5. Change the admin password: create a fresh admin with `ADMIN_EMAIL` / `ADMIN_PASSWORD` and `npm run seed` (from the `server` folder, with `MONGODB_URI` in `server/.env`), then sign in.
+
+Until Razorpay keys are added, the store still sells: checkout offers **cash on delivery**, and "Pay online" shows as coming soon.
 
 ---
 
@@ -105,14 +109,15 @@ Any value left empty appears as a highlighted **[to be added]** on the policy an
 | Reminders | Due and upcoming blade reminders; CSV export. |
 | Vehicle fitments | Add verified wiper sizes per vehicle; a source is required for each. |
 | Categories | Manage categories. |
-| Store settings | Delivery fee, free-delivery threshold, reminder months; launch checklist. |
+| Store settings | Delivery fee, free-delivery threshold, cash on delivery (on/off, fee, limit), reminder months, **Update catalogue** button, and a launch checklist (payments, webhook, email, business details). |
 
 ---
 
 ## 7. Launch checklist
 
 - [ ] Atlas network access `0.0.0.0/0`, cluster running
-- [ ] `npm run seed` run once against the live database (adds blade sizes and the starter kit; keeps prices, stock, users and orders)
+- [ ] Admin → Store settings → **Update catalogue** clicked once (adds blade sizes and the starter kit; keeps prices, stock, users and orders). This replaces running `npm run seed` by hand.
+- [ ] COD fee and limit decided (Admin → Store settings)
 - [ ] Admin password changed
 - [ ] Business details set (section 3) and policy pages reviewed
 - [ ] Razorpay test order paid and refunded successfully

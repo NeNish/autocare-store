@@ -82,7 +82,7 @@ export default function Footer() {
         </p>
         <div className="flex flex-col gap-4 border-t border-line py-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="hud">© 2026 {business.legalName || business.name} · Visibility, engineered</p>
-          <p className="hud">Secure payments by Razorpay · UPI · Cards · Net banking</p>
+          <p className="hud">UPI · Cards · Net banking · Wallets · Cash on delivery</p>
           <a href="#main" className="link-tech self-start sm:self-auto">Back to top ↑</a>
         </div>
       </div>

@@ -24,7 +24,7 @@ function useCountdown(until) {
   return { ms, label: `${Math.floor(ms / 60000)}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, '0')}` };
 }
 
-const METHOD = { upi: 'UPI', card: 'Card', netbanking: 'Net banking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay later' };
+const METHOD = { cash: 'cash on delivery', upi: 'UPI', card: 'Card', netbanking: 'Net banking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay later' };
 
 function OrderDetail() {
   const { id } = useParams();
@@ -65,7 +65,7 @@ function OrderDetail() {
   }
 
   async function cancel() {
-    const paid = order.payment?.status === 'paid';
+    const paid = order.payment?.status === 'paid' && order.paymentMethod !== 'cod';
     if (!window.confirm(paid ? 'Cancel this order? The full amount will be refunded to your original payment method.' : 'Cancel this order?')) return;
     setBusy('cancel');
     try {
@@ -86,10 +86,10 @@ function OrderDetail() {
 
   return (
     <div className="space-y-12">
-      {placed && order.payment?.status === 'paid' && (
+      {placed && (order.payment?.status === 'paid' || order.paymentMethod === 'cod') && (
         <div className="glass relative overflow-hidden rounded-[24px] p-8 sm:p-10">
           <div aria-hidden="true" className="absolute -right-20 -top-20 h-64 w-64 rounded-full blur-3xl" style={{ background: '#2f8cff33' }} />
-          <p className="eyebrow">Payment received</p>
+          <p className="eyebrow">{order.paymentMethod === 'cod' ? 'Cash on delivery' : 'Payment received'}</p>
           <p className="display mt-4 text-4xl text-frost sm:text-5xl">Thank you. Your order is <em className="chrome-text">confirmed.</em></p>
           <p className="mt-4 text-[15px] text-mute">We&apos;ll update its status here as it makes its way to you.</p>
         </div>
@@ -139,6 +139,9 @@ function OrderDetail() {
               <div className="flex justify-between"><span>Discount{order.coupon?.code ? ` (${order.coupon.code})` : ''}</span><span className="tabular-nums text-accent-light">−{formatPrice(order.discount)}</span></div>
             )}
             <div className="flex justify-between"><span>Delivery</span><span className="tabular-nums">{order.shipping ? formatPrice(order.shipping) : 'Free'}</span></div>
+            {order.codFee > 0 && (
+              <div className="flex justify-between"><span>Cash on delivery fee</span><span className="tabular-nums">{formatPrice(order.codFee)}</span></div>
+            )}
             <div className="flex items-baseline justify-between border-t border-line pt-4">
               <span className="text-[11px] uppercase tracking-[0.3em]">Total</span>
               <Price value={order.total} className="text-5xl text-accent-light" />
@@ -158,7 +161,10 @@ function OrderDetail() {
           {order.payment?.status === 'refunded' && (
             <p>Refunded in full to the original payment method. Banks usually take 5–7 working days to show it.</p>
           )}
-          {order.payment?.status !== 'paid' && order.payment?.status !== 'refunded' && <p>Not paid</p>}
+          {order.paymentMethod === 'cod' && order.payment?.status !== 'paid' && order.status !== 'cancelled' && (
+            <p>Cash on delivery: pay {formatPrice(order.total)} when it arrives.</p>
+          )}
+          {order.paymentMethod !== 'cod' && order.payment?.status !== 'paid' && order.payment?.status !== 'refunded' && <p>Not paid</p>}
           {order.payment?.razorpayPaymentId && <p className="mt-1 break-all font-mono text-[11px] text-dim">Ref {order.payment.razorpayPaymentId}</p>}
           {order.cancelReason && <p className="mt-4 text-dim">{order.cancelReason}</p>}
         </div>

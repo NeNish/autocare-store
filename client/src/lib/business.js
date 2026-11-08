@@ -17,5 +17,16 @@ export const business = {
 
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
-export const missingBusinessFields = () =>
-  ['legalName', 'email', 'phone', 'address', 'dispatchDays', 'deliveryDays', 'returnDays', 'jurisdiction'].filter((k) => !business[k]);
+const ENV_NAMES = {
+  legalName: 'NEXT_PUBLIC_LEGAL_NAME',
+  email: 'NEXT_PUBLIC_SUPPORT_EMAIL',
+  phone: 'NEXT_PUBLIC_SUPPORT_PHONE',
+  address: 'NEXT_PUBLIC_BUSINESS_ADDRESS',
+  dispatchDays: 'NEXT_PUBLIC_DISPATCH_DAYS',
+  deliveryDays: 'NEXT_PUBLIC_DELIVERY_DAYS',
+  returnDays: 'NEXT_PUBLIC_RETURN_DAYS',
+  jurisdiction: 'NEXT_PUBLIC_JURISDICTION',
+};
+
+// Names of the environment variables still to be filled in
+export const missingBusinessFields = () => Object.keys(ENV_NAMES).filter((k) => !business[k]).map((k) => ENV_NAMES[k]);

@@ -59,9 +59,9 @@ export function useCouponCode() {
 }
 
 // Server quote for the current bag; falls back to a local estimate while loading
-export function useQuote(items, couponCode) {
+export function useQuote(items, couponCode, paymentMethod = 'online') {
   const settings = useStoreSettings();
-  const key = JSON.stringify([items.map((i) => [i.productId, i.quantity]), couponCode]);
+  const key = JSON.stringify([items.map((i) => [i.productId, i.quantity]), couponCode, paymentMethod]);
   const [result, setResult] = useState({ key: null, quote: null });
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function useQuote(items, couponCode) {
     const t = setTimeout(() => {
       clientApi('/orders/quote', {
         method: 'POST',
-        body: { items: items.map((i) => ({ product: i.productId, quantity: i.quantity })), couponCode: couponCode || undefined },
+        body: { items: items.map((i) => ({ product: i.productId, quantity: i.quantity })), couponCode: couponCode || undefined, paymentMethod },
       })
         .then(({ quote }) => live && setResult({ key, quote }))
         .catch(() => live && setResult({ key, quote: null }));
@@ -87,6 +87,9 @@ export function useQuote(items, couponCode) {
   const estimate = {
     subtotal,
     discount: 0,
+    codFee: 0,
+    cod: { available: settings.codEnabled, reason: null, fee: settings.codFee },
+    onlineAvailable: settings.paymentsEnabled,
     shipping: items.length ? shippingFor(subtotal, settings) : 0,
     total: subtotal + (items.length ? shippingFor(subtotal, settings) : 0),
     coupon: null,

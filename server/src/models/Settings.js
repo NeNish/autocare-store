@@ -6,6 +6,9 @@ const settingsSchema = new mongoose.Schema(
     key: { type: String, default: 'store', unique: true },
     shippingFee: { type: Number, min: 0, max: 10000, default: 79 }, // INR; 0 = always free
     freeShippingFrom: { type: Number, min: 0, max: 1000000, default: 999 }, // INR; 0 = no free-shipping threshold
+    codEnabled: { type: Boolean, default: true },
+    codFee: { type: Number, min: 0, max: 1000, default: 0 }, // INR added to cash-on-delivery orders
+    codMaxOrder: { type: Number, min: 0, max: 1000000, default: 0 }, // INR; 0 = no limit
     remindersEnabled: { type: Boolean, default: true },
     reminderMonths: { type: Number, min: 1, max: 24, default: 6 },
   },

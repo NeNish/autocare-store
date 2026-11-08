@@ -69,6 +69,7 @@ router.post('/reminders/:id/cancel', protect, v.mongoId('id'), validate, store.c
 router.get('/reminders', adminOnly, store.listReminders);
 router.post('/reminders/:id/sent', adminOnly, v.mongoId('id'), validate, store.markReminderSent);
 router.get('/cron/daily', store.daily);
+router.post('/catalogue/sync', adminOnly, store.syncCatalogue);
 
 // Vehicle compatibility (public lookups; admin-managed verified records)
 router.get('/fitments/makes', fitments.makes);

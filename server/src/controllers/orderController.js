@@ -198,6 +198,10 @@ async function cancelOrder(order, reason) {
     { new: true }
   );
   if (!claimed) throw ApiError.conflict('Order was changed by someone else; reload and retry');
+  if (claimed.payment?.status === 'paid' && claimed.paymentMethod === 'cod') {
+    claimed.cancelReason = `${reason}. Cash was collected on delivery; refund it to the customer directly.`;
+    await claimed.save();
+  }
   if (claimed.payment?.status === 'paid' && claimed.payment.razorpayPaymentId) {
     try {
       const refund = await razorpay.refundPayment(claimed.payment.razorpayPaymentId, toPaise(claimed.total));
@@ -223,19 +227,23 @@ function mergeLines(items) {
 
 // POST /api/orders/quote — price a cart (and an optional coupon) without reserving anything
 exports.quote = async (req, res) => {
-  const { items, couponCode } = matchedData(req, { locations: ['body'] });
+  const { items, couponCode, paymentMethod } = matchedData(req, { locations: ['body'] });
   const merged = mergeLines(items);
   const products = await Product.find({ _id: { $in: [...merged.keys()] }, isActive: true }).select('price').lean();
   const lines = products.map((p) => ({ price: p.price, quantity: merged.get(String(p._id)) }));
   const settings = await Settings.get();
-  const q = await quote({ lines, couponCode, userId: req.user?._id, settings });
-  res.json({ success: true, quote: q });
+  const q = await quote({ lines, couponCode, userId: req.user?._id, settings, paymentMethod });
+  res.json({ success: true, quote: { ...q, onlineAvailable: razorpay.configured() } });
 };
 
-// POST /api/orders — reserves stock, prices the order on the server and opens a Razorpay order
+// POST /api/orders — reserves stock and prices the order on the server.
+// Online: opens a Razorpay order for the customer to pay. Cash on delivery: confirmed straight away.
 exports.create = async (req, res) => {
-  const { items, shippingAddress, couponCode, reminderOptIn } = matchedData(req, { locations: ['body'] });
-  if (!razorpay.configured()) throw new ApiError(503, 'Online payments are not set up yet. Please try again later.');
+  const { items, shippingAddress, couponCode, reminderOptIn, paymentMethod = 'online' } = matchedData(req, { locations: ['body'] });
+  const cod = paymentMethod === 'cod';
+  if (!cod && !razorpay.configured()) {
+    throw new ApiError(503, 'Online payments are not set up yet. Please choose cash on delivery or try again later.');
+  }
   await releaseExpired();
 
   const reserved = await reserveStock(mergeLines(items));
@@ -243,8 +251,9 @@ exports.create = async (req, res) => {
   let order;
   try {
     const settings = await Settings.get();
-    const q = await quote({ lines: reserved, couponCode, userId: req.user._id, settings });
+    const q = await quote({ lines: reserved, couponCode, userId: req.user._id, settings, paymentMethod });
     if (couponCode && q.couponError) throw ApiError.badRequest(q.couponError);
+    if (cod && !q.cod.available) throw ApiError.badRequest(q.cod.reason);
 
     if (q.coupon) {
       const coupon = await Coupon.findOne({ code: q.coupon.code }).lean();
@@ -263,9 +272,18 @@ exports.create = async (req, res) => {
       discount: q.discount,
       coupon: q.coupon ? { code: q.coupon.code, kind: q.coupon.kind, value: q.coupon.value } : undefined,
       shipping: q.shipping,
+      codFee: q.codFee,
       total: q.total,
+      paymentMethod,
+      status: cod ? 'pending' : 'awaiting_payment',
+      payment: { provider: cod ? 'cod' : 'razorpay', status: 'unpaid' },
       reminderOptIn: Boolean(reminderOptIn),
     });
+
+    if (cod) {
+      await scheduleReminder(order).catch((e) => console.error('Reminder not scheduled:', e.message));
+      return res.status(201).json({ success: true, order, checkout: null });
+    }
 
     const rzp = await razorpay.createOrder({
       amountPaise: toPaise(order.total),
@@ -379,7 +397,12 @@ exports.updateStatus = async (req, res) => {
   }
   if (order.status === 'awaiting_payment') throw ApiError.badRequest('This order has not been paid yet');
 
-  const updated = await Order.findOneAndUpdate({ _id: order._id, status: order.status }, { status }, { new: true });
+  const change = { status };
+  // Cash on delivery is collected when the parcel is delivered
+  if (status === 'delivered' && order.paymentMethod === 'cod' && order.payment?.status !== 'paid') {
+    Object.assign(change, { 'payment.status': 'paid', 'payment.method': 'cash', 'payment.paidAt': new Date() });
+  }
+  const updated = await Order.findOneAndUpdate({ _id: order._id, status: order.status }, change, { new: true });
   if (!updated) throw ApiError.conflict('Order was changed by someone else; reload and retry');
   res.json({ success: true, order: updated });
 };

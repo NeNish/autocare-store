@@ -72,6 +72,12 @@ export default function OrderSummary({ quote, loading, code, children, showCoupo
         <span>Delivery</span>
         <span className="tabular-nums text-frost">{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
       </div>
+      {quote.codFee > 0 && (
+        <div className="flex justify-between text-[14px] text-mute">
+          <span>Cash on delivery fee</span>
+          <span className="tabular-nums text-frost">{formatPrice(quote.codFee)}</span>
+        </div>
+      )}
       {toFree > 0 && (
         <div>
           <p className="text-[12px] text-dim">Add {formatPrice(toFree)} more for free delivery.</p>

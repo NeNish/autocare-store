@@ -26,6 +26,8 @@ const orderSchema = new mongoose.Schema(
     discount: { type: Number, default: 0 },
     coupon: { code: String, kind: String, value: Number },
     shipping: { type: Number, required: true },
+    codFee: { type: Number, default: 0 },
+    paymentMethod: { type: String, enum: ['online', 'cod'], default: 'online' },
     total: { type: Number, required: true },
     // awaiting_payment: stock is held while the customer pays (released after PAYMENT_WINDOW_MIN)
     // pending: paid, waiting to be packed
@@ -36,7 +38,7 @@ const orderSchema = new mongoose.Schema(
       index: true,
     },
     payment: {
-      provider: { type: String, default: 'razorpay' },
+      provider: { type: String, enum: ['razorpay', 'cod'], default: 'razorpay' },
       status: { type: String, enum: ['unpaid', 'paid', 'failed', 'refunded'], default: 'unpaid' },
       razorpayOrderId: { type: String, index: true },
       razorpayPaymentId: { type: String },

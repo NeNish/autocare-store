@@ -39,7 +39,16 @@ function shippingFor(amount, settings) {
 }
 
 // lines: [{ price, quantity }]
-async function quote({ lines, couponCode, userId, settings }) {
+// Whether cash on delivery can be used for an order of this value (before the COD fee)
+function codStatus(amount, settings) {
+  if (!settings.codEnabled) return { available: false, reason: 'Cash on delivery is not offered right now' };
+  if (settings.codMaxOrder > 0 && amount > settings.codMaxOrder) {
+    return { available: false, reason: `Cash on delivery is available on orders up to ₹${settings.codMaxOrder}` };
+  }
+  return { available: true, reason: null };
+}
+
+async function quote({ lines, couponCode, userId, settings, paymentMethod = 'online' }) {
   const subtotal = round2(lines.reduce((s, l) => s + l.price * l.quantity, 0));
   let discount = 0;
   let coupon = null;
@@ -51,11 +60,16 @@ async function quote({ lines, couponCode, userId, settings }) {
   }
   const afterDiscount = round2(subtotal - discount);
   const shipping = lines.length ? shippingFor(afterDiscount, settings) : 0;
+  const beforeFees = round2(afterDiscount + shipping);
+  const cod = codStatus(beforeFees, settings);
+  const codFee = paymentMethod === 'cod' && cod.available ? settings.codFee || 0 : 0;
   return {
     subtotal,
     discount,
     shipping,
-    total: round2(afterDiscount + shipping),
+    codFee,
+    total: round2(beforeFees + codFee),
+    cod: { ...cod, fee: settings.codFee || 0 },
     coupon: coupon ? { code: coupon.code, kind: coupon.kind, value: coupon.value, description: coupon.description } : null,
     couponError,
     freeShippingFrom: settings.freeShippingFrom,
@@ -63,4 +77,4 @@ async function quote({ lines, couponCode, userId, settings }) {
   };
 }
 
-module.exports = { quote, evaluateCoupon, shippingFor, round2 };
+module.exports = { quote, evaluateCoupon, shippingFor, codStatus, round2 };

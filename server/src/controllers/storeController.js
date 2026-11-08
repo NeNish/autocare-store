@@ -20,6 +20,9 @@ exports.publicSettings = async (_req, res) => {
       remindersEnabled: s.remindersEnabled,
       reminderMonths: s.reminderMonths,
       paymentsEnabled: razorpay.configured(),
+      codEnabled: s.codEnabled,
+      codFee: s.codFee,
+      codMaxOrder: s.codMaxOrder,
     },
   });
 };
@@ -121,4 +124,11 @@ exports.daily = async (req, res) => {
     }
   }
   res.json({ success: true, releasedOrders: released, remindersSent: sent, remindersFailed: failed });
+};
+
+// POST /api/catalogue/sync — admin: same as `npm run seed` for products (no users touched)
+exports.syncCatalogue = async (_req, res) => {
+  const { syncCatalogue } = require('../seed/catalogue');
+  const result = await syncCatalogue();
+  res.json({ success: true, result });
 };

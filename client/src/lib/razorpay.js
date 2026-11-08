@@ -36,6 +36,15 @@ export async function openCheckout(checkout) {
       description: checkout.description,
       prefill: checkout.prefill,
       theme: { color: '#2f8cff' },
+      // UPI first, then every other method enabled on the Razorpay account
+      // (cards, net banking, wallets, EMI, cardless EMI, Pay Later)
+      config: {
+        display: {
+          blocks: { upi: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
+          sequence: ['block.upi'],
+          preferences: { show_default_blocks: true },
+        },
+      },
       handler: (response) => resolve(response),
       modal: { ondismiss: () => reject({ dismissed: true }), confirm_close: true },
     });

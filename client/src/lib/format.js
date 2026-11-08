@@ -6,7 +6,7 @@ export const formatDate = (d) =>
   new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
 // Defaults only; the live values come from GET /api/settings/public (Admin → Store settings)
-export const DEFAULT_SETTINGS = { shippingFee: 79, freeShippingFrom: 999, remindersEnabled: true, reminderMonths: 6, paymentsEnabled: true };
+export const DEFAULT_SETTINGS = { shippingFee: 79, freeShippingFrom: 999, remindersEnabled: true, reminderMonths: 6, paymentsEnabled: true, codEnabled: true, codFee: 0, codMaxOrder: 0 };
 
 export const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 

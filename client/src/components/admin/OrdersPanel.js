@@ -18,7 +18,7 @@ export default function OrdersPanel() {
   }, []);
 
   async function changeStatus(order, status) {
-    const paid = order.payment?.status === 'paid';
+    const paid = order.payment?.status === 'paid' && order.paymentMethod !== 'cod';
     if (status === 'cancelled' && !window.confirm(paid ? `Cancel this order and refund ${formatPrice(order.total)} through Razorpay?` : 'Cancel this order and return items to stock?')) return;
     setError('');
     try {
@@ -36,6 +36,9 @@ export default function OrdersPanel() {
   const revenue = paidOrders.reduce((n, o) => n + o.total, 0);
   const discounts = paidOrders.reduce((n, o) => n + (o.discount || 0), 0);
   const aov = paidOrders.length ? revenue / paidOrders.length : 0;
+  const codDue = orders
+    .filter((o) => o.paymentMethod === 'cod' && o.payment?.status !== 'paid' && o.status !== 'cancelled')
+    .reduce((n, o) => n + o.total, 0);
 
   return (
     <div className="space-y-4">
@@ -43,7 +46,7 @@ export default function OrdersPanel() {
         <Stat label="Paid orders" value={paidOrders.length} />
         <Stat label="To fulfil (paid + packing)" value={orders.filter((o) => ['pending', 'processing'].includes(o.status)).length} />
         <Stat label="Revenue collected" value={formatPrice(revenue)} />
-        <Stat label="Average order · discounts" value={`${formatPrice(aov)}`} sub={`${formatPrice(discounts)} in promo discounts`} />
+        <Stat label="Average order · discounts" value={`${formatPrice(aov)}`} sub={`${formatPrice(discounts)} in promo discounts · ${formatPrice(codDue)} COD to collect`} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -85,7 +88,9 @@ export default function OrdersPanel() {
                   <td className="px-4 py-3 text-right font-medium">{formatPrice(o.total)}</td>
                   <td className="px-4 py-3 text-xs">
                     <span className={o.payment?.status === 'paid' ? 'text-emerald-200' : o.payment?.status === 'refunded' ? 'text-amber-100' : 'text-dim'}>
-                      {{ paid: 'Paid', refunded: 'Refunded', failed: 'Failed', unpaid: 'Unpaid' }[o.payment?.status || 'unpaid']}
+                      {o.paymentMethod === 'cod'
+                        ? o.payment?.status === 'paid' ? 'COD · collected' : 'COD · to collect'
+                        : { paid: 'Paid', refunded: 'Refunded', failed: 'Failed', unpaid: 'Unpaid' }[o.payment?.status || 'unpaid']}
                     </span>
                     {o.coupon?.code && <span className="block font-mono text-dim">{o.coupon.code} −{formatPrice(o.discount)}</span>}
                   </td>

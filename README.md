@@ -27,6 +27,7 @@ Built on the team's standard stack:
 - **Compare** up to three products side by side (`/compare`)
 - **Interactive 3D product views** (three.js) on product pages and in the homepage chapters
 - **Online payments with Razorpay** (UPI, cards, net banking, wallets): the server prices the order, holds stock during payment, verifies the signature, then confirms and captures with Razorpay. Includes a webhook backup, automatic refunds on cancellation, and release of unpaid orders
+- **Cash on delivery** with an optional fee and order limit; marked collected when delivered
 - **Promo codes** (percent or fixed, minimum order, cap, dates, usage limit, once per customer) applied in the bag and checked again on the server
 - **Care kits**: bundles of catalogue products; the product page shows contents and the saving at today's prices
 - **Delivery fee with a free-delivery threshold**, editable by the admin
@@ -154,7 +155,7 @@ All responses are JSON. Errors look like `{ "success": false, "message": "...", 
 | POST   | `/api/orders/:id/cancel`    | Owner    | Pending orders only; restocks items                                     |
 | GET    | `/api/orders`               | Admin    |                                                                         |
 | PATCH  | `/api/orders/:id/status`    | Admin    | `{ status }`; setting `cancelled` restocks items                        |
-| POST   | `/api/orders/quote`         | Public   | `{ items, couponCode? }` → subtotal, discount, delivery, total          |
+| POST   | `/api/orders/quote`         | Public   | `{ items, couponCode?, paymentMethod? }` → subtotal, discount, delivery, COD fee, total          |
 | POST   | `/api/orders/:id/pay`       | Owner    | Reopen Razorpay checkout for an unpaid order                            |
 | POST   | `/api/orders/:id/pay/verify`| Owner    | `{ razorpay_order_id, razorpay_payment_id, razorpay_signature }`        |
 | POST   | `/api/payments/razorpay/webhook` | Razorpay | Signed events: `payment.captured`, `payment.failed`, `order.paid` |
@@ -163,6 +164,7 @@ All responses are JSON. Errors look like `{ "success": false, "message": "...", 
 | GET/POST/PUT/DELETE | `/api/coupons[/:id]` | Admin | Promo codes                                                        |
 | GET    | `/api/reminders/mine`       | Customer | Own reminders; `POST /api/reminders/:id/cancel` to cancel               |
 | GET    | `/api/reminders`            | Admin    | All reminders; `POST /api/reminders/:id/sent` to mark one sent          |
+| POST   | `/api/catalogue/sync`       | Admin    | Adds missing standard products and kits, fills blade sizes (keeps prices and stock) |
 | GET    | `/api/cron/daily`           | Cron     | `Authorization: Bearer CRON_SECRET`: releases unpaid orders, sends due reminders |
 | GET    | `/api/fitments/makes`       | Public   | Makes with verified records                                             |
 | GET    | `/api/fitments/models`      | Public   | `make`                                                                  |
@@ -204,4 +206,4 @@ How it runs on Vercel: Vercel's zero-config Express support uses `server/src/app
 - Set `NODE_ENV=production` on the API so cookies are `secure` (HTTPS only) and 500 errors don't leak details.
 - Set `CLIENT_URL` to the real frontend origin(s), comma-separated.
 - Run `npm run build && npm start` in `client/`, and set `API_URL` to the API's internal URL.
-- Payments use Razorpay; without keys, checkout shows that payments are being set up and no order is taken.
+- Payments: Razorpay (UPI, cards, net banking, wallets, EMI, Pay Later) and cash on delivery. Without Razorpay keys, checkout offers cash on delivery only.
