@@ -43,6 +43,9 @@ const productFields = (optional) => {
     body('bladeLengthsIn.*').optional().isFloat({ min: 8, max: 40 }).withMessage('Blade lengths must be 8–40 inches').toFloat(),
     body('connectors').optional().isArray({ max: 8 }),
     body('connectors.*').optional().isString().trim().isLength({ min: 1, max: 40 }),
+    body('kitItems').optional().isArray({ max: 10 }).withMessage('Up to 10 kit items'),
+    body('kitItems.*.product').optional().isMongoId().withMessage('Invalid kit product'),
+    body('kitItems.*.quantity').optional().isInt({ min: 1, max: 20 }).withMessage('Kit quantity must be 1–20').toInt(),
   ];
 };
 
@@ -56,16 +59,54 @@ const listProducts = [
   query('sort').optional().isIn(['newest', 'price_asc', 'price_desc', 'name']),
 ];
 
-const createOrder = [
+const cartItems = [
   body('items').isArray({ min: 1, max: 50 }).withMessage('Cart is empty'),
   body('items.*.product').isMongoId().withMessage('Invalid product id'),
   body('items.*.quantity').isInt({ min: 1, max: 99 }).withMessage('Quantity must be 1-99').toInt(),
+  body('couponCode').optional({ values: 'falsy' }).trim().isLength({ max: 30 }).withMessage('Invalid code'),
+];
+const quote = cartItems;
+const createOrder = [
+  ...cartItems,
+  body('reminderOptIn').optional().isBoolean().toBoolean(),
   body('shippingAddress.fullName').trim().notEmpty().withMessage('Full name is required').isLength({ max: 100 }),
   body('shippingAddress.phone').trim().matches(/^[+\d][\d\s-]{7,15}$/).withMessage('Valid phone is required'),
   body('shippingAddress.line1').trim().notEmpty().withMessage('Address is required').isLength({ max: 200 }),
   body('shippingAddress.city').trim().notEmpty().withMessage('City is required').isLength({ max: 80 }),
   body('shippingAddress.state').trim().notEmpty().withMessage('State is required').isLength({ max: 80 }),
   body('shippingAddress.postalCode').trim().matches(/^\d{6}$/).withMessage('PIN code must be 6 digits'),
+];
+
+const verifyPayment = [
+  body('razorpay_order_id').isString().trim().isLength({ min: 4, max: 60 }),
+  body('razorpay_payment_id').isString().trim().isLength({ min: 4, max: 60 }),
+  body('razorpay_signature').isString().trim().isLength({ min: 10, max: 200 }),
+];
+
+const settings = [
+  body('shippingFee').optional().isFloat({ min: 0, max: 10000 }).withMessage('Shipping fee must be 0–10000').toFloat(),
+  body('freeShippingFrom').optional().isFloat({ min: 0, max: 1000000 }).withMessage('Free-shipping amount must be 0 or more').toFloat(),
+  body('remindersEnabled').optional().isBoolean().toBoolean(),
+  body('reminderMonths').optional().isInt({ min: 1, max: 24 }).withMessage('Reminder months must be 1–24').toInt(),
+];
+
+const optNum = (field, opts, msg) => body(field).optional({ values: 'null' }).isFloat(opts).withMessage(msg).toFloat();
+const coupon = [
+  body('code').trim().matches(/^[A-Za-z0-9_-]{3,30}$/).withMessage('Code must be 3–30 letters, numbers, - or _').toUpperCase(),
+  body('description').optional().trim().isLength({ max: 200 }),
+  body('kind').isIn(['percent', 'fixed']).withMessage('Type must be percent or fixed'),
+  body('value')
+    .isFloat({ min: 1 }).withMessage('Value must be at least 1').toFloat()
+    .custom((v, { req }) => req.body.kind !== 'percent' || v <= 90).withMessage('Percent discounts can be at most 90%'),
+  optNum('minSubtotal', { min: 0 }, 'Minimum order must be 0 or more'),
+  optNum('maxDiscount', { min: 1 }, 'Maximum discount must be at least 1'),
+  body('startsAt').optional({ values: 'null' }).isISO8601().withMessage('Invalid start date').toDate(),
+  body('endsAt')
+    .optional({ values: 'null' }).isISO8601().withMessage('Invalid end date').toDate()
+    .custom((v, { req }) => !req.body.startsAt || new Date(v) > new Date(req.body.startsAt)).withMessage('End date must be after the start date'),
+  body('usageLimit').optional({ values: 'null' }).isInt({ min: 1 }).withMessage('Usage limit must be at least 1').toInt(),
+  body('oncePerCustomer').optional().isBoolean().toBoolean(),
+  body('active').optional().isBoolean().toBoolean(),
 ];
 
 const orderStatus = [
@@ -124,5 +165,9 @@ module.exports = {
   updateProduct: productFields(true),
   listProducts,
   createOrder,
+  quote,
+  verifyPayment,
+  settings,
+  coupon,
   orderStatus,
 };

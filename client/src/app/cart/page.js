@@ -5,11 +5,14 @@ import { useCart } from '@/context/CartContext';
 import useHydrated from '@/lib/useHydrated';
 import ProductArt from '@/components/ProductArt';
 import OrderSummary from '@/components/OrderSummary';
+import { useCouponCode, useQuote } from '@/lib/store';
 import PageShell from '@/components/lux/PageShell';
 import { formatPrice } from '@/lib/format';
 
 export default function CartPage() {
-  const { items, ready, subtotal, setQuantity, remove } = useCart();
+  const { items, ready, setQuantity, remove } = useCart();
+  const code = useCouponCode();
+  const { quote, loading } = useQuote(items, code);
   const hydrated = useHydrated();
 
   if (!ready || !hydrated) {
@@ -84,7 +87,7 @@ export default function CartPage() {
             </li>
           ))}
         </ul>
-        <OrderSummary subtotal={subtotal}>
+        <OrderSummary quote={quote} loading={loading} code={code}>
           <Link href="/checkout" data-magnetic="0.2" className="btn-primary h-14 w-full">Proceed to checkout</Link>
           <Link href="/products" className="link-tech mx-auto flex w-fit">Continue browsing</Link>
         </OrderSummary>

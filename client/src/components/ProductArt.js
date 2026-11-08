@@ -7,6 +7,7 @@ const LABELS = {
   'Washer Fluid': 'Washer fluid tablets illustration',
   'Rain Repellent': 'Rain-repellent atomiser illustration',
   'Microfiber Towel': 'Microfiber drying towel illustration',
+  Kit: 'Care kit illustration',
 };
 
 function Lines({ type, accent }) {
@@ -60,6 +61,19 @@ function Lines({ type, accent }) {
               <path key={`v${i}`} d={`M${106 + i * 20} ${90 - i * 1.6} L${118 + i * 20} ${216 - i * 1.6}`} />
             ))}
           </g>
+        </g>
+      );
+    case 'Kit':
+      return (
+        <g fill="none">
+          <path d="M70 140 L160 112 L250 140 L160 168 Z" stroke={accent} strokeWidth="1.2" opacity="0.7" />
+          <path d="M70 140 V206 L160 236 L250 206 V140" stroke={accent} strokeWidth="1.4" />
+          <path d="M160 168 V236" stroke={accent} strokeWidth="1" opacity="0.6" />
+          <rect x="112" y="62" width="30" height="78" rx="9" stroke="#bfe3ff" strokeOpacity="0.8" strokeWidth="1.2" />
+          <rect x="121" y="46" width="12" height="16" rx="3" stroke="#bfe3ff" strokeOpacity="0.8" />
+          <path d="M156 98 L214 88 L222 132 L164 142 Z" stroke="#bfe3ff" strokeOpacity="0.5" />
+          <ellipse cx="196" cy="74" rx="18" ry="6" stroke={accent} strokeWidth="1.1" />
+          <path d="M178 74 v-6 a18 6 0 0 1 36 0 v6" stroke={accent} strokeWidth="1.1" />
         </g>
       );
     default:

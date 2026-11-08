@@ -76,7 +76,7 @@ function Statement() {
 }
 
 async function Anatomy() {
-  const { products } = await serverApi('/products?limit=100');
+  const { products } = await serverApi('/products?limit=100').catch(() => ({ products: [] }));
   const byType = (t) => products.filter((p) => p.type === t);
   const blades = byType('Wiper Blades').filter((p) => p.bladeLengthsIn?.length === 2);
   const allSizes = blades.flatMap((p) => p.bladeLengthsIn);
@@ -147,7 +147,7 @@ function FitSection() {
 }
 
 async function Lines() {
-  const { products } = await serverApi('/products?limit=100');
+  const { products } = await serverApi('/products?limit=100').catch(() => ({ products: [] }));
   return (
     <div className="grid gap-px overflow-hidden rounded-[28px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
       {LINES.map((l, i) => {
@@ -167,10 +167,10 @@ async function Lines() {
                 <ProductArt product={{ type: l.type, name: l.title }} />
               </div>
             </div>
-            <p className="hud mt-6">0{i + 1} · {ps.length} products</p>
+            <p className="hud mt-6">0{i + 1}{ps.length ? ` · ${ps.length} products` : ''}</p>
             <h3 className="mt-3 text-[24px] font-normal tracking-[-0.02em] text-frost">{l.title}</h3>
             <p className="mt-2 text-[14px] leading-relaxed text-mute">{l.text}</p>
-            <p className="mt-6 font-mono text-[12px] text-ice">{prices.length ? `${formatPrice(Math.min(...prices))} – ${formatPrice(Math.max(...prices))}` : 'Coming soon'}</p>
+            <p className="mt-6 font-mono text-[12px] text-ice">{prices.length ? `${formatPrice(Math.min(...prices))} – ${formatPrice(Math.max(...prices))}` : 'View range →'}</p>
           </Link>
         );
       })}

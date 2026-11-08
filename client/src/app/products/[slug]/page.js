@@ -6,6 +6,8 @@ import AddToCartButton from '@/components/AddToCartButton';
 import Price from '@/components/lux/Price';
 import ProductViewer from '@/components/vision/ProductViewer';
 import CompareButton from '@/components/vision/CompareButton';
+import { formatPrice, DEFAULT_SETTINGS } from '@/lib/format';
+import { business, siteUrl } from '@/lib/business';
 
 async function getProduct(slug) {
   try {
@@ -20,12 +22,49 @@ async function getProduct(slug) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const product = await getProduct(slug);
-  return product ? { title: product.name, description: product.description } : { title: 'Product not found' };
+  if (!product) return { title: 'Product not found' };
+  return {
+    title: product.name,
+    description: product.description,
+    alternates: { canonical: `/products/${product.slug}` },
+    openGraph: { title: product.name, description: product.description, images: product.image ? [product.image] : undefined },
+  };
+}
+
+function deliveryText(s) {
+  if (!s.shippingFee) return 'Free delivery on every order.';
+  if (s.freeShippingFrom > 0) return `Free on orders from ${formatPrice(s.freeShippingFrom)}; otherwise ${formatPrice(s.shippingFee)}.`;
+  return `${formatPrice(s.shippingFee)} on every order.`;
+}
+
+function KitContents({ product }) {
+  if (!product.kitItems?.length) return null;
+  const saving = product.kitValue - product.price;
+  return (
+    <section aria-labelledby="kit-title" className="mt-14" data-reveal>
+      <h2 id="kit-title" className="hud text-accent-light">In this kit</h2>
+      <ul className="mt-5 border-t border-line">
+        {product.kitItems.map((k) => (
+          <li key={k.product._id} className="flex items-center justify-between gap-6 border-b border-line py-4">
+            <Link href={`/products/${k.product.slug}`} className="text-[15px] text-frost transition-colors hover:text-ice">
+              <span className="text-accent">{k.quantity} ×</span> {k.product.name}
+            </Link>
+            <span className="font-mono text-[13px] tabular-nums text-mute">{formatPrice(k.product.price * k.quantity)}</span>
+          </li>
+        ))}
+      </ul>
+      {saving > 0 && (
+        <p className="mt-4 text-[14px] text-mute">
+          {formatPrice(product.kitValue)} bought separately today. <span className="text-accent-light">You save {formatPrice(saving)}.</span>
+        </p>
+      )}
+    </section>
+  );
 }
 
 async function Related({ product }) {
   if (!product.type) return null;
-  const { products } = await serverApi(`/products?q=${encodeURIComponent(product.type)}&limit=4`);
+  const { products } = await serverApi(`/products?q=${encodeURIComponent(product.type)}&limit=4`).catch(() => ({ products: [] }));
   const others = products.filter((p) => p._id !== product._id).slice(0, 3);
   if (!others.length) return null;
   return (
@@ -75,10 +114,30 @@ async function ProductDetail({ params }) {
   if (!product) notFound();
 
   const lowStock = product.stock > 0 && product.stock <= 10;
+  const { settings } = await serverApi('/settings/public').catch(() => ({ settings: DEFAULT_SETTINGS }));
+  // Structured data from stored fields only (helps search engines show price and stock)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    sku: product._id,
+    category: product.type,
+    brand: { '@type': 'Brand', name: business.name },
+    ...(product.image ? { image: [product.image] } : {}),
+    offers: {
+      '@type': 'Offer',
+      url: `${siteUrl}/products/${product.slug}`,
+      priceCurrency: 'INR',
+      price: product.price,
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    },
+  };
   const sizes = product.bladeLengthsIn?.length === 2 ? [...product.bladeLengthsIn].sort((a, b) => b - a) : null;
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <nav aria-label="Breadcrumb" className="hud mb-12 animate-rise">
         <Link href="/products" className="transition-colors hover:text-ice">Products</Link>
         {product.type && (
@@ -126,12 +185,13 @@ async function ProductDetail({ params }) {
           </div>
 
           {product.description && <p className="mt-12 text-[17px] leading-[1.85] text-mute" data-reveal>{product.description}</p>}
+          <KitContents product={product} />
           <SpecTable product={product} />
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2" data-reveal>
             <div className="card p-6">
               <p className="hud text-accent-light">Delivery</p>
-              <p className="mt-3 text-[14px] leading-relaxed text-mute">Free on orders from ₹999. Cash on delivery.</p>
+              <p className="mt-3 text-[14px] leading-relaxed text-mute">{deliveryText(settings)} Pay by UPI, card, net banking or wallet.</p>
             </div>
             <div className="card p-6">
               <p className="hud text-accent-light">Questions?</p>

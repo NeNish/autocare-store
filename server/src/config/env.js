@@ -14,4 +14,18 @@ module.exports = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
   missingEnv: missing,
+  storeName: process.env.STORE_NAME || 'AutoCare',
+  razorpay: {
+    keyId: process.env.RAZORPAY_KEY_ID || '',
+    keySecret: process.env.RAZORPAY_KEY_SECRET || '',
+    webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
+    apiUrl: (process.env.RAZORPAY_API_URL || 'https://api.razorpay.com/v1').replace(/\/$/, ''),
+  },
+  // Minutes an unpaid order keeps its stock before it is released
+  paymentWindowMin: Number(process.env.PAYMENT_WINDOW_MIN) || 30,
+  cronSecret: process.env.CRON_SECRET || '',
+  email: {
+    resendKey: process.env.RESEND_API_KEY || '',
+    from: process.env.EMAIL_FROM || '',
+  },
 };

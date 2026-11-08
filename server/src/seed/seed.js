@@ -1,5 +1,5 @@
 /* Seeds the catalog and an admin account.
- * Usage: npm run seed            (upserts; keeps existing orders and users)
+ * Usage: npm run seed            (adds missing products; keeps prices, stock, orders and users)
  *        npm run seed -- --fresh (wipes categories and products first)
  */
 const mongoose = require('mongoose');
@@ -102,6 +102,23 @@ const products = [
   },
 ];
 
+const starterKits = [
+  {
+    name: 'Monsoon Clear-View Kit',
+    type: 'Kit',
+    price: 899,
+    stock: 30,
+    description:
+      'Everything for clear glass in the rains, packed together: rain-repellent spray, washer fluid tablets and a waffle-weave drying towel.',
+    features: ['Rain-Repellent Glass Spray 200 ml', 'Washer Fluid Tablets (Pack of 10)', 'Waffle-Weave Drying Towel 60 × 80 cm'],
+    contents: [
+      ['Rain-Repellent Glass Spray 200 ml', 1],
+      ['Concentrated Washer Fluid Tablets (Pack of 10)', 1],
+      ['Waffle-Weave Microfiber Drying Towel (60 × 80 cm)', 1],
+    ],
+  },
+];
+
 async function seed() {
   await connectDB();
   const fresh = process.argv.includes('--fresh');
@@ -119,13 +136,32 @@ async function seed() {
     catDocs[c.number] = doc;
   }
 
+  // New products are created in full. Existing products only get their descriptive fields
+  // refreshed, so prices, stock, photos and visibility set in the admin panel are kept.
+  const byName = {};
   for (const p of products) {
     let doc = await Product.findOne({ name: p.name });
     if (!doc) doc = new Product({ ...p, category: catDocs[82]._id });
-    else Object.assign(doc, { ...p, category: catDocs[82]._id });
+    else {
+      const { price: _price, stock: _stock, ...descriptive } = p;
+      Object.assign(doc, { ...descriptive, category: catDocs[82]._id });
+    }
     await doc.save();
+    byName[p.name] = doc;
   }
-  console.log(`Seeded ${categories.length} category and ${products.length} products`);
+
+  // Starter kit, created once (an example bundle; edit or hide it in Admin → Products)
+  let kits = 0;
+  for (const k of starterKits) {
+    if (await Product.exists({ name: k.name })) continue;
+    await Product.create({
+      ...k,
+      category: catDocs[82]._id,
+      kitItems: k.contents.map(([name, quantity]) => ({ product: byName[name]._id, quantity })),
+    });
+    kits += 1;
+  }
+  console.log(`Seeded ${categories.length} category, ${products.length} products and ${kits} new kit(s)`);
 
   const adminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD;

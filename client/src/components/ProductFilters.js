@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-const types = ['Wiper Blades', 'Rain Repellent', 'Washer Fluid', 'Microfiber Towel'];
+const types = ['Wiper Blades', 'Rain Repellent', 'Washer Fluid', 'Microfiber Towel', 'Kit'];
 
 export default function ProductFilters({ categories }) {
   const router = useRouter();

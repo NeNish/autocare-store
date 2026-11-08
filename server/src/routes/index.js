@@ -9,6 +9,7 @@ const products = require('../controllers/productController');
 const orders = require('../controllers/orderController');
 const fitments = require('../controllers/fitmentController');
 const assistant = require('../controllers/assistantController');
+const store = require('../controllers/storeController');
 
 const router = express.Router();
 const adminOnly = [protect, authorize('admin')];
@@ -43,13 +44,31 @@ router.post('/products', adminOnly, v.createProduct, validate, products.create);
 router.put('/products/:id', adminOnly, v.mongoId('id'), v.updateProduct, validate, products.update);
 router.delete('/products/:id', adminOnly, v.mongoId('id'), validate, products.remove);
 
-// Orders
+// Orders and payments
+router.post('/orders/quote', optionalAuth, v.quote, validate, orders.quote);
 router.post('/orders', protect, v.createOrder, validate, orders.create);
+router.post('/orders/:id/pay', protect, v.mongoId('id'), validate, orders.pay);
+router.post('/orders/:id/pay/verify', protect, v.mongoId('id'), v.verifyPayment, validate, orders.verify);
+router.post('/payments/razorpay/webhook', orders.webhook);
 router.get('/orders/mine', protect, orders.mine);
 router.get('/orders', adminOnly, orders.list);
 router.get('/orders/:id', protect, v.mongoId('id'), validate, orders.get);
 router.post('/orders/:id/cancel', protect, v.mongoId('id'), validate, orders.cancel);
 router.patch('/orders/:id/status', adminOnly, v.mongoId('id'), v.orderStatus, validate, orders.updateStatus);
+
+// Store settings, coupons, reminders
+router.get('/settings/public', store.publicSettings);
+router.get('/settings', adminOnly, store.getSettings);
+router.put('/settings', adminOnly, v.settings, validate, store.updateSettings);
+router.get('/coupons', adminOnly, store.listCoupons);
+router.post('/coupons', adminOnly, v.coupon, validate, store.createCoupon);
+router.put('/coupons/:id', adminOnly, v.mongoId('id'), v.coupon, validate, store.updateCoupon);
+router.delete('/coupons/:id', adminOnly, v.mongoId('id'), validate, store.removeCoupon);
+router.get('/reminders/mine', protect, store.myReminders);
+router.post('/reminders/:id/cancel', protect, v.mongoId('id'), validate, store.cancelMyReminder);
+router.get('/reminders', adminOnly, store.listReminders);
+router.post('/reminders/:id/sent', adminOnly, v.mongoId('id'), validate, store.markReminderSent);
+router.get('/cron/daily', store.daily);
 
 // Vehicle compatibility (public lookups; admin-managed verified records)
 router.get('/fitments/makes', fitments.makes);

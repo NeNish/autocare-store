@@ -16,6 +16,15 @@ const productSchema = new mongoose.Schema(
     // These drive the vehicle compatibility finder, so enter them from the product's packaging.
     bladeLengthsIn: [{ type: Number, min: 8, max: 40 }],
     connectors: [{ type: String, trim: true, maxlength: 40 }],
+    // Kits (type "Kit"): a pre-packed bundle of other catalogue products, sold as its own SKU
+    // with its own price and stock. The contents are shown to shoppers with the saving.
+    kitItems: [
+      {
+        _id: false,
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+        quantity: { type: Number, min: 1, max: 20, default: 1 },
+      },
+    ],
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

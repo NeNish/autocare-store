@@ -23,13 +23,30 @@ const orderSchema = new mongoose.Schema(
       postalCode: { type: String, required: true },
     },
     subtotal: { type: Number, required: true },
+    discount: { type: Number, default: 0 },
+    coupon: { code: String, kind: String, value: Number },
     shipping: { type: Number, required: true },
     total: { type: Number, required: true },
+    // awaiting_payment: stock is held while the customer pays (released after PAYMENT_WINDOW_MIN)
+    // pending: paid, waiting to be packed
     status: {
       type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-      default: 'pending',
+      enum: ['awaiting_payment', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+      default: 'awaiting_payment',
+      index: true,
     },
+    payment: {
+      provider: { type: String, default: 'razorpay' },
+      status: { type: String, enum: ['unpaid', 'paid', 'failed', 'refunded'], default: 'unpaid' },
+      razorpayOrderId: { type: String, index: true },
+      razorpayPaymentId: { type: String },
+      method: { type: String },
+      paidAt: { type: Date },
+      refundId: { type: String },
+      failureReason: { type: String },
+    },
+    reminderOptIn: { type: Boolean, default: false },
+    cancelReason: { type: String },
   },
   { timestamps: true }
 );

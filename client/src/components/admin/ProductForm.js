@@ -1,11 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { clientApi, errorMessage } from '@/lib/api';
 
-const TYPES = ['Wiper Blades', 'Washer Fluid', 'Rain Repellent', 'Microfiber Towel'];
+const TYPES = ['Wiper Blades', 'Washer Fluid', 'Rain Repellent', 'Microfiber Towel', 'Kit'];
 
-const empty = { name: '', category: '', type: '', price: '', stock: '', description: '', image: '', features: '', bladeLengths: '', connectors: '', isActive: true };
+// Kit contents editor: other catalogue products and quantities
+function KitEditor({ value, onChange, selfId }) {
+  const [options, setOptions] = useState([]);
+  useEffect(() => {
+    clientApi('/products?limit=100&all=true')
+      .then((d) => setOptions(d.products.filter((p) => p.type !== 'Kit' && p._id !== selfId)))
+      .catch(() => {});
+  }, [selfId]);
+  const byId = Object.fromEntries(options.map((p) => [p._id, p]));
+  const worth = value.reduce((n, k) => n + (byId[k.product]?.price || 0) * k.quantity, 0);
+  const setRow = (i, patch) => onChange(value.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  return (
+    <fieldset className="sm:col-span-2 rounded-2xl border border-line p-4">
+      <legend className="px-2 text-sm text-frost">Kit contents</legend>
+      <div className="space-y-2">
+        {value.map((row, i) => (
+          <div key={i} className="flex gap-2">
+            <label className="sr-only" htmlFor={`kit-p-${i}`}>Product {i + 1}</label>
+            <select id={`kit-p-${i}`} className="input flex-1" value={row.product} onChange={(e) => setRow(i, { product: e.target.value })}>
+              <option value="">Choose a product…</option>
+              {options.map((p) => <option key={p._id} value={p._id}>{p.name} · ₹{p.price}</option>)}
+            </select>
+            <label className="sr-only" htmlFor={`kit-q-${i}`}>Quantity {i + 1}</label>
+            <input id={`kit-q-${i}`} type="number" min="1" max="20" className="input w-20" value={row.quantity} onChange={(e) => setRow(i, { quantity: Number(e.target.value) || 1 })} />
+            <button type="button" className="btn-secondary px-3" aria-label={`Remove item ${i + 1}`} onClick={() => onChange(value.filter((_, j) => j !== i))}>×</button>
+          </div>
+        ))}
+      </div>
+      <button type="button" className="link-tech mt-3 text-xs" onClick={() => onChange([...value, { product: '', quantity: 1 }])}>+ Add item</button>
+      {worth > 0 && <p className="mt-3 text-xs text-dim">Bought separately today: ₹{worth}. Price the kit below this so shoppers see a saving.</p>}
+    </fieldset>
+  );
+}
+
+const empty = { name: '', category: '', type: '', price: '', stock: '', description: '', image: '', features: '', bladeLengths: '', connectors: '', kitItems: [], isActive: true };
 
 export default function ProductForm({ product, categories, onSaved, onCancel }) {
   const [form, setForm] = useState(() =>
@@ -17,6 +51,7 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
           features: (product.features || []).join('\n'),
           bladeLengths: (product.bladeLengthsIn || []).join(', '),
           connectors: (product.connectors || []).join(', '),
+          kitItems: (product.kitItems || []).map((k) => ({ product: k.product?._id || k.product, quantity: k.quantity })),
           image: product.image || '',
           description: product.description || '',
           type: product.type || '',
@@ -36,6 +71,9 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
     if (form.bladeLengths.split(',').map((x) => x.trim()).filter(Boolean).some((x) => !(Number(x) >= 8 && Number(x) <= 40))) {
       return setError('Blade lengths must be numbers between 8 and 40 (inches), separated by commas');
     }
+    if (form.type === 'Kit' && form.kitItems.filter((k) => k.product).length < 2) {
+      return setError('A kit needs at least two products');
+    }
     if (form.stock === '' || !Number.isInteger(Number(form.stock)) || Number(form.stock) < 0) {
       return setError('Stock must be a whole number, 0 or more');
     }
@@ -51,6 +89,7 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
       features: form.features.split('\n').map((s) => s.trim()).filter(Boolean),
       bladeLengthsIn: form.bladeLengths.split(',').map((s) => s.trim()).filter(Boolean).map(Number),
       connectors: form.connectors.split(',').map((s) => s.trim()).filter(Boolean),
+      kitItems: form.type === 'Kit' ? form.kitItems.filter((k) => k.product) : [],
       isActive: form.isActive,
     };
 
@@ -118,6 +157,9 @@ export default function ProductForm({ product, categories, onSaved, onCancel }) 
           <label className="label" htmlFor="p-conn">Arm connectors</label>
           <input id="p-conn" className="input" value={form.connectors} onChange={set('connectors')} placeholder="e.g. J-hook, U-hook" />
         </div>
+        {form.type === 'Kit' && (
+          <KitEditor value={form.kitItems} selfId={product?._id} onChange={(kitItems) => setForm((f) => ({ ...f, kitItems }))} />
+        )}
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={form.isActive} onChange={set('isActive')} />
           Visible in store

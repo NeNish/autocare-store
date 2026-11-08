@@ -15,7 +15,15 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({ origin: clientUrl.split(',').map((s) => s.trim()), credentials: true }));
-app.use(express.json({ limit: '100kb' }));
+// Keep the raw body for webhook signature checks (Razorpay signs the exact bytes)
+app.use(
+  express.json({
+    limit: '100kb',
+    verify: (req, _res, buf) => {
+      if (req.originalUrl.startsWith('/api/payments/')) req.rawBody = buf;
+    },
+  })
+);
 app.use(cookieParser());
 if (!isProd && process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 

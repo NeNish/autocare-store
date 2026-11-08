@@ -11,12 +11,13 @@ const Product3D = dynamic(() => import('./Product3D'), {
 
 // Switch between the interactive 3D model, the technical drawing and a photo (if one exists).
 export default function ProductViewer({ product }) {
+  const has3d = product.type !== 'Kit';
   const views = [
-    ['3d', '3D model'],
+    ...(has3d ? [['3d', '3D model']] : []),
     ['drawing', 'Drawing'],
     ...(product.image ? [['photo', 'Photo']] : []),
   ];
-  const [view, setView] = useState('3d');
+  const [view, setView] = useState(has3d ? '3d' : product.image ? 'photo' : 'drawing');
   return (
     <div className="relative aspect-square overflow-hidden rounded-[28px] border border-line" style={{ background: 'radial-gradient(70% 70% at 50% 40%, #0e1a2b 0%, #050608 75%)' }}>
       {view === '3d' && <Product3D type={product.type} lengths={product.bladeLengthsIn} className="absolute inset-0" />}

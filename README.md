@@ -1,5 +1,7 @@
 # AutoCare Store
 
+> Taking over the store? Start with **[HANDOVER.md](HANDOVER.md)**: accounts, Razorpay setup, business details and the launch checklist.
+
 An online store for **Category 82: Windshield Care & Wiper Blades**: concentrated washer fluid tablets, rain-repellent sprays, waffle-weave drying microfiber towels, and universal hook-type wiper blade pairs.
 
 Built on the team's standard stack:
@@ -24,12 +26,20 @@ Built on the team's standard stack:
 - **Compatibility finder** (`/fit`): match by verified vehicle record (make → model → year) or by measuring your current blades; results show exact and close (within 1″) matches and check the arm connector
 - **Compare** up to three products side by side (`/compare`)
 - **Interactive 3D product views** (three.js) on product pages and in the homepage chapters
+- **Online payments with Razorpay** (UPI, cards, net banking, wallets): the server prices the order, holds stock during payment, verifies the signature, then confirms and captures with Razorpay. Includes a webhook backup, automatic refunds on cancellation, and release of unpaid orders
+- **Promo codes** (percent or fixed, minimum order, cap, dates, usage limit, once per customer) applied in the bag and checked again on the server
+- **Care kits**: bundles of catalogue products; the product page shows contents and the saving at today's prices
+- **Delivery fee with a free-delivery threshold**, editable by the admin
+- **Blade replacement reminders**: opt-in at checkout, one email after N months (via Resend, or CSV export in admin)
+- **Launch pages**: shipping, returns and refunds, terms, privacy, contact (business details come from env vars), plus sitemap, robots, Open Graph image and Product structured data
 - **Windshield care assistant**: troubleshooting, maintenance and product suggestions grounded in the live catalogue; uses Claude when `ANTHROPIC_API_KEY` is set and a built-in care guide otherwise
 
 **Admins** (`/admin`)
 - Orders: list, filter by status, update status, and see revenue and open-order stats
 - Products: create, edit, hide from the store, delete, and see low-stock highlighting
 - Categories: create, edit, and delete (blocked while a category still has products)
+- Promo codes, blade reminders (CSV export), store settings (delivery fee, threshold, reminder months) with a launch checklist
+- Orders show payment status, promo used, revenue and average order value; cancelling a paid order refunds it
 - Vehicle fitments: add, edit and delete vehicle wiper-size records; every record requires a verification source
 - Products: blade lengths (inches) and arm connectors for wiper blades, used by the compatibility finder
 
@@ -144,6 +154,16 @@ All responses are JSON. Errors look like `{ "success": false, "message": "...", 
 | POST   | `/api/orders/:id/cancel`    | Owner    | Pending orders only; restocks items                                     |
 | GET    | `/api/orders`               | Admin    |                                                                         |
 | PATCH  | `/api/orders/:id/status`    | Admin    | `{ status }`; setting `cancelled` restocks items                        |
+| POST   | `/api/orders/quote`         | Public   | `{ items, couponCode? }` → subtotal, discount, delivery, total          |
+| POST   | `/api/orders/:id/pay`       | Owner    | Reopen Razorpay checkout for an unpaid order                            |
+| POST   | `/api/orders/:id/pay/verify`| Owner    | `{ razorpay_order_id, razorpay_payment_id, razorpay_signature }`        |
+| POST   | `/api/payments/razorpay/webhook` | Razorpay | Signed events: `payment.captured`, `payment.failed`, `order.paid` |
+| GET    | `/api/settings/public`      | Public   | Delivery fee, threshold, reminders, whether payments are on             |
+| GET/PUT| `/api/settings`             | Admin    | Store settings                                                          |
+| GET/POST/PUT/DELETE | `/api/coupons[/:id]` | Admin | Promo codes                                                        |
+| GET    | `/api/reminders/mine`       | Customer | Own reminders; `POST /api/reminders/:id/cancel` to cancel               |
+| GET    | `/api/reminders`            | Admin    | All reminders; `POST /api/reminders/:id/sent` to mark one sent          |
+| GET    | `/api/cron/daily`           | Cron     | `Authorization: Bearer CRON_SECRET`: releases unpaid orders, sends due reminders |
 | GET    | `/api/fitments/makes`       | Public   | Makes with verified records                                             |
 | GET    | `/api/fitments/models`      | Public   | `make`                                                                  |
 | GET    | `/api/fitments/years`       | Public   | `make, model`                                                           |
@@ -168,10 +188,12 @@ The repo deploys as **two Vercel projects** from the same GitHub repo: one for t
    - `JWT_SECRET`: a long random string
    - `NODE_ENV`: `production`
    - `CLIENT_URL`: the website URL from step 3 (fill in afterwards)
+   - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `STORE_NAME`: payments (see HANDOVER.md)
+   - `CRON_SECRET`: protects the daily job in `server/vercel.json`; `RESEND_API_KEY` and `EMAIL_FROM` (optional) send reminder emails
    - `ANTHROPIC_API_KEY` (optional): turns on Claude for the care assistant; `ASSISTANT_MODEL` defaults to `claude-haiku-5-5`
 
    Deploy, then check `https://<api-project>.vercel.app/api/health`.
-3. **Website project:** import the same repo again, set **Root Directory = `client`** (framework: Next.js), and add `API_URL` = the API URL from step 2, with no trailing slash. Deploy.
+3. **Website project:** import the same repo again, set **Root Directory = `client`** (framework: Next.js), and add `API_URL` = the API URL from step 2, with no trailing slash, plus `NEXT_PUBLIC_SITE_URL` and the business details listed in `client/.env.example`. Deploy.
 4. Put the website URL into the API project's `CLIENT_URL` and redeploy the API.
 5. **Seed the live database once** from your computer: set `MONGODB_URI`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`, then run `npm run seed`. Running it again later updates the catalogue products (including blade sizes for the fit finder) without touching users or orders; note that it also resets their prices and stock to the seed values.
 
@@ -182,4 +204,4 @@ How it runs on Vercel: Vercel's zero-config Express support uses `server/src/app
 - Set `NODE_ENV=production` on the API so cookies are `secure` (HTTPS only) and 500 errors don't leak details.
 - Set `CLIENT_URL` to the real frontend origin(s), comma-separated.
 - Run `npm run build && npm start` in `client/`, and set `API_URL` to the API's internal URL.
-- Payment is cash on delivery. To take online payments, add a gateway such as Razorpay or Stripe in `orderController.create`.
+- Payments use Razorpay; without keys, checkout shows that payments are being set up and no order is taken.

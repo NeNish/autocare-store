@@ -12,8 +12,12 @@ import Cursor from '@/components/lux/Cursor';
 import Intro from '@/components/lux/Intro';
 import Assistant from '@/components/vision/Assistant';
 import CompareTray from '@/components/vision/CompareTray';
+import { business, siteUrl } from '@/lib/business';
 
 export const metadata = {
+  metadataBase: new URL(siteUrl),
+  openGraph: { type: 'website', siteName: business.name, locale: 'en_IN' },
+  twitter: { card: 'summary_large_image' },
   title: { default: 'AutoCare · Visibility, engineered', template: '%s · AutoCare' },
   description:
     'Visibility technology for your windshield: beam wiper blades, rain repellent, concentrated washer fluid and microfiber care, with a vehicle compatibility finder and a care assistant.',

@@ -24,7 +24,7 @@ function OrdersList() {
     return (
       <div className="flex flex-col items-start gap-8 border-t border-line pt-12">
         <p className="text-[17px] text-mute">You haven&apos;t placed an order yet.</p>
-        <Link href="/products" className="btn-primary">Enter the collection</Link>
+        <Link href="/products" className="btn-primary">Browse products</Link>
       </div>
     );
   }
@@ -51,11 +51,52 @@ function OrdersList() {
   );
 }
 
+function Reminders() {
+  const [reminders, setReminders] = useState([]);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    clientApi('/reminders/mine')
+      .then((d) => setReminders(d.reminders))
+      .catch(() => {});
+  }, []);
+  const active = reminders.filter((r) => r.status === 'scheduled');
+  if (!active.length) return null;
+
+  async function cancel(id) {
+    try {
+      await clientApi(`/reminders/${id}/cancel`, { method: 'POST' });
+      setReminders((list) => list.map((r) => (r._id === id ? { ...r, status: 'cancelled' } : r)));
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  }
+
+  return (
+    <section aria-labelledby="rem-title" className="mt-20">
+      <p className="eyebrow">Blade reminders</p>
+      <h2 id="rem-title" className="display mt-3 text-3xl text-frost">We&apos;ll remind you when it&apos;s time.</h2>
+      {error && <p role="alert" className="mt-4 text-sm text-rose-200">{error}</p>}
+      <ul className="mt-8 border-t border-line">
+        {active.map((r) => (
+          <li key={r._id} className="flex flex-wrap items-center justify-between gap-4 border-b border-line py-5">
+            <div>
+              <p className="text-[15px] text-frost">{r.products.join(', ')}</p>
+              <p className="mt-1 text-[13px] text-dim">Reminder on {formatDate(r.dueAt)} to {r.email}</p>
+            </div>
+            <button type="button" className="btn-secondary h-10 px-5" onClick={() => cancel(r._id)}>Cancel reminder</button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function OrdersPage() {
   return (
     <PageShell eyebrow="Your account" title="Your" accent="orders.">
       <RequireAuth>
         <OrdersList />
+        <Reminders />
       </RequireAuth>
     </PageShell>
   );

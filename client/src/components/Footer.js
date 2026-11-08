@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { business } from '@/lib/business';
 
 const columns = [
   {
@@ -8,6 +9,7 @@ const columns = [
       ['/products?q=Rain%20Repellent', 'Rain repellent'],
       ['/products?q=Washer%20Fluid', 'Washer fluid'],
       ['/products?q=Microfiber%20Towel', 'Microfiber care'],
+      ['/products?q=Kit', 'Care kits'],
     ],
   },
   {
@@ -16,7 +18,17 @@ const columns = [
       ['/simulator', 'Weather simulator'],
       ['/fit', 'Compatibility finder'],
       ['/compare', 'Compare products'],
+    ],
+  },
+  {
+    title: 'Help',
+    links: [
       ['/account/orders', 'Your orders'],
+      ['/policies/shipping', 'Shipping & delivery'],
+      ['/policies/refunds', 'Returns & refunds'],
+      ['/policies/terms', 'Terms'],
+      ['/policies/privacy', 'Privacy'],
+      ['/contact', 'Contact'],
     ],
   },
 ];
@@ -37,7 +49,7 @@ export default function Footer() {
               <Link href="/simulator" data-magnetic className="btn-secondary h-14 px-8">Try the simulator</Link>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-10 self-end">
+          <div className="grid grid-cols-2 gap-10 self-end sm:grid-cols-3">
             {columns.map((c) => (
               <nav key={c.title} aria-label={c.title}>
                 <p className="hud">{c.title}</p>
@@ -69,8 +81,8 @@ export default function Footer() {
           AutoCare
         </p>
         <div className="flex flex-col gap-4 border-t border-line py-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="hud">© 2026 AutoCare · Visibility, engineered</p>
-          <p className="hud">Free delivery from ₹999 · Cash on delivery</p>
+          <p className="hud">© 2026 {business.legalName || business.name} · Visibility, engineered</p>
+          <p className="hud">Secure payments by Razorpay · UPI · Cards · Net banking</p>
           <a href="#main" className="link-tech self-start sm:self-auto">Back to top ↑</a>
         </div>
       </div>
